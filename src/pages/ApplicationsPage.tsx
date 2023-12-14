@@ -83,7 +83,6 @@ const ApplicationsPage: React.FC = () => {
                 .then(res => setCatalogs(res.data.content))
             axios.get(`http://localhost:8080/api/applications/by-company/${user?.id_company}`)
                 .then(res => {
-                    console.log(res.data.content)
                     setApplications(res.data.content)
                 })
             axios.get(`http://localhost:8080/api/products/productsForCatalog/${catalogId}`)
@@ -144,7 +143,6 @@ const ApplicationsPage: React.FC = () => {
                     const response1 = await axios.get(`http://localhost:8080/api/logic/costMatrix/${id}`)
                     setCostMatrix(response1.data)
                     const response2 = await axios.get(`http://localhost:8080/api/logic/minCost/${id}`)
-                    console.log(response2.data);
                     const response3 = await axios.get(`http://localhost:8080/api/logic/solution/${id}`)
                     setSolution(response3.data)
                 } catch (error) {
@@ -162,7 +160,6 @@ const ApplicationsPage: React.FC = () => {
     }
 
     const handleSaveOffer = async () => {
-        console.log(newOffer)
         await axios.post(`http://localhost:8080/api/offers/create?id_application=${selectedApplication?.idApplication}&id_company=${user?.id_company}`, newOffer)
             .then(() => {
                 setOpenAddOfferDialog(false)
