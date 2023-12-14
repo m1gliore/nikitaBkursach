@@ -18,7 +18,7 @@ const Main = styled.div`
 
 const LoginPage: React.FC = () => {
 
-    const {register, handleSubmit} = useForm<LoginFormInput>()
+    const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInput>()
     const navigate = useNavigate()
     const [, setUser] = useLocalStorage('user', "")
 
@@ -49,8 +49,30 @@ const LoginPage: React.FC = () => {
             <Main>
                 <Title>Войти в аккаунт</Title>
                 <Form onSubmit={handleSubmit(onLogin)}>
-                    <Input {...register('username')} type="text" placeholder="Имя пользователя"/>
-                    <Input {...register('password')} type="password" placeholder="Пароль"/>
+                    <Input
+                        {...register('username', {
+                            required: 'Имя пользователя обязательно',
+                            pattern: {
+                                value: /^[A-Z]\w*$/,
+                                message: 'Имя пользователя должно начинаться с заглавной буквы'
+                            }
+                        })}
+                        type="text"
+                        placeholder="Имя пользователя"
+                    />
+                    {errors.username && <p style={{color: "red", textAlign: "center"}}>{errors.username.message}</p>}
+                    <Input
+                        {...register('password', {
+                            required: 'Пароль обязателен',
+                            minLength: {
+                                value: 8,
+                                message: 'Пароль должен содержать не менее 8 символов'
+                            }
+                        })}
+                        type="password"
+                        placeholder="Пароль"
+                    />
+                    {errors.password && <p style={{color: "red", textAlign: "center"}}>{errors.password.message}</p>}
                     <Button type="submit">Войти</Button>
                 </Form>
             </Main>
