@@ -1,14 +1,23 @@
 export interface LoginFormInput {
-    username: string
+    email: string
     password: string
 }
 
 export interface CompanyInfoFormInput {
-    nameCompany: string
+    name: string
+    address: string
+    uniqNumber: string
     description: string
 }
 
-export interface UserAdminFormInput {
-    id_company_info: number
-    username: string
+export interface UserFormInput {
+    companyId?: number
+    userId?: number
+    email?: string
+    name?: string
+    surname?: string
+    patronymic?: string
+    avatar?: string
+    oldPassword?: string
+    newPassword?: string
 }

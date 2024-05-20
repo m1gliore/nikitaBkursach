@@ -2,7 +2,7 @@ import React from 'react';
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper} from '@mui/material';
 import {CustomTableProps} from "../types/Tables";
 import styled from "styled-components";
-import {ImageType} from "../types/Products";
+import {ImageType} from "../types/Items";
 
 const CustomImage = styled.img`
   width: 3vw;
@@ -30,21 +30,21 @@ const CustomTable: React.FC<CustomTableProps> = ({data, columns, rowsPerPage, cu
                                 <React.Fragment key={key}>
                                     {innerIndex !== 0 && (
                                         <TableCell>
-                                            {typeof item[key] === 'object' ? (
-                                                key === 'productDTO' ? (
-                                                    item[key].nameProduct
-                                                ) : key === 'images' ? (
-                                                    item[key].map((image: ImageType) => (
-                                                        image.main && <CustomImage src={"data:" + image.type + ";base64," + image.file_image} alt={image.fileName} />
-                                                    ))
-                                                ) : null
-                                            ) : (
-                                                key === 'isAccept' ? (
-                                                    item[key] ? 'Принят' : 'Не принят'
-                                                ) : (
-                                                    item[key]
-                                                )
-                                            )}
+                                            {/*{typeof item[key] === 'object' ? (*/}
+                                            {/*    key === 'productDTO' ? (*/}
+                                            {/*        item[key].nameProduct*/}
+                                            {/*    ) : key === 'images' ? (*/}
+                                            {/*        item[key].map((image: ImageType) => (*/}
+                                            {/*            image.main && <CustomImage src={"data:" + image.type + ";base64," + image.file_image} alt={image.fileName} />*/}
+                                            {/*        ))*/}
+                                            {/*    ) : null*/}
+                                            {/*) : (*/}
+                                            {/*    key === 'isAccept' ? (*/}
+                                            {/*        item[key] ? 'Принят' : 'Не принят'*/}
+                                            {/*    ) : (*/}
+                                            {/*        item[key]*/}
+                                            {/*    )*/}
+                                            {/*)}*/}
                                         </TableCell>
                                     )}
                                 </React.Fragment>

@@ -10,7 +10,9 @@ const Text = styled.p`
   text-align: center;
 `
 
-const Image = styled.img``
+const Image = styled.img`
+  height: 60vh;
+`
 
 const HomePage: React.FC = () => {
     return (

@@ -1,6 +1,6 @@
 export type Catalog = {
-    idCatalog?: number
-    nameCatalog: string
+    id?: number
+    name: string
     description: string
     idCompanyInfo?: number
 }

@@ -8,7 +8,16 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TablePagination, DialogTitle, DialogContent, DialogActions, Dialog, InputLabel, Select, MenuItem, TextField
+    TablePagination,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Dialog,
+    InputLabel,
+    Select,
+    MenuItem,
+    TextField,
+    IconButton, Menu
 } from '@mui/material';
 import {Container} from "../components/Container";
 import {Cost, Offer} from "../types/Offers";
@@ -17,15 +26,16 @@ import {useNavigate} from "react-router-dom";
 import {useLocalStorage} from "react-use";
 import {DecodedToken, LocalStorageData} from "../types/Token";
 import {jwtDecode} from "jwt-decode";
+import {FilterListOutlined} from "@mui/icons-material";
 
 const Title = styled.h1`
 `
 
 const OffersPage: React.FC = () => {
 
-
     const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(-1)
+    const [token, setToken] = useState<string>("")
+    const [isUser, setIsUser] = useState<number>(2)
     const [offers, setOffers] = useState<Array<Offer>>([])
     const [pg, setPg] = useState<number>(0)
     const [offerId, setOfferId] = useState<number>(0)
@@ -34,37 +44,50 @@ const OffersPage: React.FC = () => {
     const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null)
     const [openDetailsDialog, setOpenDetailsDialog] = useState<boolean>(false)
     const [newEditOffer, setNewEditOffer] = useState<Offer>({
-        idOffers: 0,
-        idProduct: 0,
-        idUser: user?.id_company,
-        nameOffer: '',
-        count: 0,
-        costsDTOS: []
+        name: '',
+        description: '',
+        deliveryTime: new Date(),
+        possibleDelayTime: 0,
+        price: 0
     })
+    const [oneOffer, setOneOffer] = useState<Offer>()
     const navigate = useNavigate()
 
-    const selectedOfferObject = offers.find((offer) => offer.idOffers === offerId)
+    const selectedOfferObject = offers.find((offer) => offer.id === offerId)
+
+    const [filterType, setFilterType] = useState<string>("MY");
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const openMenu = Boolean(anchorEl);
 
     useEffect(() => {
-        if (user?.id_company !== -1 && user?.token && user?.username) {
-            const decodedToken = jwtDecode(user.token) as DecodedToken;
-            setIsUser(decodedToken.isAdmin);
+        if (user?.token) {
+            setToken(user.token)
         }
     }, [user])
 
     useEffect(() => {
-        (async () => {
-            axios.get(`http://localhost:8080/api/offers/company/${user?.id_company}`)
-                .then(res => {
-                    setOffers(res.data.content)
+        if (token) {
+            (async () => {
+                axios.get(`http://localhost:8080/server/coursework-user/api/offer`, {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    params: {
+                        statuses: "ACTIVE,ACCEPTED,REJECTED",
+                        offerFiltrationType: filterType
+                    }
                 })
+                    .then(res => {
+                        setOffers(res.data.list)
+                    })
 
-            if (selectedOfferObject) {
-                const updatedNewEditOffer = { ...newEditOffer, idProduct: selectedOfferObject.idProduct };
-                setNewEditOffer(updatedNewEditOffer);
-            }
-        })()
-    }, [newEditOffer, selectedOfferObject, user])
+                if (selectedOfferObject) {
+                    // const updatedNewEditOffer = { ...newEditOffer, idProduct: selectedOfferObject.idProduct };
+                    // setNewEditOffer(updatedNewEditOffer);
+                }
+            })()
+        }
+    }, [filterType, selectedOfferObject, token])
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPg(newPage)
@@ -80,60 +103,120 @@ const OffersPage: React.FC = () => {
 
     const handleRowClick = (offer: Offer) => {
         setSelectedOffer(offer)
+        const id = offer.id
+        if (offer) {
+            axios.get(`http://localhost:8080/server/coursework-auth/api/offer/${id}`, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            })
+                .then((res) => {
+                    setOneOffer(res.data)
+                })
+                .catch(error => {
+                    alert(`Произошла ошибка при получении описания тендера: ${error}`,)
+                })
+        }
         setOpenDetailsDialog(true)
     }
 
     const deleteOffer = async () => {
-        await axios.delete(`http://localhost:8080/api/offers/${offerId}`)
+        await axios.delete(`http://localhost:8080/server/coursework-user/api/offer/${offerId}`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => {
                 navigate(0)
                 setOpenDeleteDialog(false)
             })
+            .catch(error => {
+                alert(`Произошла ошибка при удалении тендера: ${error}`,)
+            })
     }
 
     const editOffer = async () => {
-        axios.put(`http://localhost:8080/api/offers/update?id_company=${user?.id_company}`, newEditOffer)
+        axios.put(`http://localhost:8080/server/coursework-user/api/offer/${offerId}`, newEditOffer, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => {
                 navigate(0)
                 setOpenEditDialog(false)
             })
+            .catch(error => {
+                alert(`Произошла ошибка при изменении предложения: ${error}`,)
+            })
     }
+
+    const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleFilterClose = (newFilter?: string) => {
+        setAnchorEl(null);
+        if (newFilter) {
+            setFilterType(newFilter);
+        }
+    };
 
     return (
         <Container>
             <Title>Предложения</Title>
-            <div>
-                {isUser === 2 &&
-                    <Button variant="contained" style={{marginRight: "2.5vw"}} color="success" onClick={handleEditOffer}>
-                        Изменить предложение
-                    </Button>
-                }
-                {isUser === 2 &&
-                    <Button variant="contained" color="error" onClick={handleDeleteOffer}>
-                        Удалить предложение
-                    </Button>
-                }
+            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <div>
+                    {isUser === 2 &&
+                        <Button variant="contained" style={{marginRight: "2.5vw"}} color="success"
+                                onClick={handleEditOffer}>
+                            Изменить предложение
+                        </Button>
+                    }
+                    {isUser === 2 &&
+                        <Button variant="contained" color="error" onClick={handleDeleteOffer}>
+                            Удалить предложение
+                        </Button>
+                    }
+                </div>
+                <div style={{marginLeft: "5vw"}}>
+                    <IconButton
+                        aria-controls="filter-menu"
+                        aria-haspopup="true"
+                        onClick={handleFilterClick}
+                    >
+                        <FilterListOutlined fontSize="large"/>
+                    </IconButton>
+                    <Menu
+                        id="filter-menu"
+                        anchorEl={anchorEl}
+                        open={openMenu}
+                        onClose={() => handleFilterClose()}
+                    >
+                        <MenuItem onClick={() => handleFilterClose("MY")}>Мои</MenuItem>
+                        <MenuItem onClick={() => handleFilterClose("COMPANY")}>Компания</MenuItem>
+                    </Menu>
+                </div>
             </div>
             <TableContainer style={{marginTop: '1vw'}}>
                 <Table>
                     <TableHead>
                         <TableRow>
                             <TableCell>Название</TableCell>
-                            <TableCell>Общая стоимость</TableCell>
-                            <TableCell>Количество товаров</TableCell>
+                            <TableCell>Компания</TableCell>
                             <TableCell>Статус</TableCell>
-                            <TableCell>Продукт</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {offers.slice(pg * 7, pg * 7 + 7).map((offer, index) => (
                             <TableRow style={{cursor: "pointer"}} key={index}
                                       onClick={() => handleRowClick(offer)}>
-                                <TableCell>{offer.nameOffer}</TableCell>
-                                <TableCell>{offer.allCost ?? 0}</TableCell>
-                                <TableCell>{offer.count}</TableCell>
-                                <TableCell>{offer.isAccept ? 'Принят' : 'Не принят'}</TableCell>
-                                <TableCell>{offer.productDTO?.nameProduct}</TableCell>
+                                <TableCell>{offer.name}</TableCell>
+                                <TableCell>{offer.companyName}</TableCell>
+                                <TableCell>
+                                    {offer.status === 'ACTIVE' && "Активен"}
+                                    {offer.status === 'REJECTED' && "Отклонен"}
+                                    {offer.status === 'ACCEPTED' && "Принят"}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -145,28 +228,50 @@ const OffersPage: React.FC = () => {
             <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)}>
                 <DialogTitle>Детали предложения</DialogTitle>
                 <DialogContent>
-                    <div>
-                        <strong>Название:</strong> {selectedOffer?.nameOffer}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Название:</strong> {oneOffer?.name}
                     </div>
-                    <div>
-                        <strong>Количество товара:</strong> {selectedOffer?.count}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Описание:</strong> {oneOffer?.description}
                     </div>
-                    <div>
-                        <strong>Название товара:</strong> {selectedOffer?.productDTO?.nameProduct}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Компания:</strong> {oneOffer?.company?.name}
                     </div>
-                    <div>
-                        <strong>Статус:</strong>{" "}
-                        {selectedOffer?.isAccept
-                            ? "Принят"
-                            : "Не принят"}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Автор предложения:</strong> {oneOffer?.profile?.fullName}
                     </div>
-                    <div>
-                        <strong>Заказы:</strong>
-                        {selectedOffer?.costsDTOS?.map((cost: Cost, index) => (
-                            <div key={index}>
-                                {`Адрес: ${cost.address} - Стоимость: ${cost.costAll} (${cost.acceptCount ? "Принято" : "Не принято"})`}
-                            </div>
-                        ))}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Цена:</strong> {oneOffer?.price}
+                    </div>
+                    {/*<div style={{marginBottom: "1vw"}}>*/}
+                    {/*    <strong>Статус:</strong>{" "}*/}
+                    {/*    {oneOffer?.status === 'ACTIVE' && "Активен"}*/}
+                    {/*    {oneOffer?.status === 'ACTIVE' && "Активен"}*/}
+                    {/*    {oneOffer?.status === 'REJECTED' && "Отклонен"}*/}
+                    {/*    {oneOffer?.status === 'ACCEPTED' && "Принят"}*/}
+                    {/*</div>*/}
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Дата
+                            создания:</strong> {oneOffer?.created && new Date(new Date(oneOffer?.created).getTime() - 3 * 60 * 60 * 1000).toLocaleString('ru-RU', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    })}
+                    </div>
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Дата
+                            доставки:</strong> {oneOffer?.deliveryTime && new Date(new Date(oneOffer?.deliveryTime).getTime() - 3 * 60 * 60 * 1000).toLocaleString('ru-RU', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    })}
+                    </div>
+                    <div style={{marginBottom: "1vw"}}>
+                        <strong>Возможное время задержки (в днях):</strong> {oneOffer?.possibleDelayTime}
                     </div>
                 </DialogContent>
                 <DialogActions>
@@ -188,7 +293,7 @@ const OffersPage: React.FC = () => {
                         fullWidth
                     >
                         {offers.map((offer, index) => (
-                            <MenuItem key={index} value={offer.idOffers}>{offer.nameOffer}</MenuItem>
+                            <MenuItem key={index} value={offer.id}>{offer.name}</MenuItem>
                         ))}
                     </Select>
                 </DialogContent>
@@ -210,58 +315,78 @@ const OffersPage: React.FC = () => {
                         labelId="offer-select-label-edit"
                         id="offer-select-edit"
                         value={offerId}
-                        onChange={(e) => {
+                        onChange={async (e) => {
+                            const selectedOffer = offers.find(offer => offer.id === e.target.value);
                             setOfferId(e.target.value as number)
-                            setNewEditOffer({...newEditOffer, idOffers: e.target.value as number})
+                            if (selectedOffer) {
+                                try {
+                                    const response = await axios.get(`http://localhost:8080/server/coursework-auth/api/offer/${selectedOffer.id}`, {
+                                        headers: {
+                                            Authorization: `${token}`
+                                        }
+                                    });
+                                    console.log(response.data)
+                                    const updatedOffer = response.data;
+                                    setNewEditOffer({
+                                        name: updatedOffer.name,
+                                        description: updatedOffer.description,
+                                        deliveryTime: updatedOffer.deliveryTime ? new Date(new Date(updatedOffer.deliveryTime).getTime() - 3 * 60 * 60 * 1000) : undefined,
+                                        possibleDelayTime: updatedOffer.possibleDelayTime,
+                                        price: updatedOffer.price
+                                    })
+                                } catch (error) {
+                                    console.error('Error fetching updated offer:', error);
+                                }
+                            }
                         }}
                         fullWidth
                     >
                         {offers
-                            .filter(offer => !offer.isAccept)
-                            .map((application, index) => (
-                                <MenuItem key={index} value={application.idOffers}>
-                                    {application.nameOffer}
+                            // .filter(offer => offer.status === "ACTIVE")
+                            .map((offer, index) => (
+                                <MenuItem key={index} value={offer?.id}>
+                                    {offer?.name}
                                 </MenuItem>
                             ))}
                     </Select>
                     <TextField
                         label="Название"
-                        value={newEditOffer.nameOffer}
-                        onChange={(e) => setNewEditOffer({...newEditOffer, nameOffer: e.target.value})}
+                        value={newEditOffer.name}
+                        onChange={(e) => setNewEditOffer({...newEditOffer, name: e.target.value})}
                         fullWidth
                         margin="normal"
                     />
                     <TextField
-                        label="Количество"
-                        type="number"
-                        value={newEditOffer.count}
-                        onChange={(e) => setNewEditOffer({...newEditOffer, count: Number(e.target.value)})}
+                        label="Описание"
+                        value={newEditOffer.description}
+                        onChange={(e) => setNewEditOffer({...newEditOffer, description: e.target.value})}
                         fullWidth
                         margin="normal"
                     />
-                    {selectedOfferObject && selectedOfferObject.costsDTOS?.map((cost, index) => (
-                        <TextField
-                            key={index}
-                            label={`Сумма на адрес ${index + 1}`}
-                            type="number"
-                            onChange={(e) => {
-                                setNewEditOffer((prevOffer) => {
-                                    const updatedCostsDTOS = [...(prevOffer.costsDTOS || [])];
-                                    updatedCostsDTOS[index] = {
-                                        idCost: cost.idCost,
-                                        idApplicationInfo: cost.idApplicationInfo,
-                                        costAll: e.target.value !== '' ? Number(e.target.value) : 0
-                                    }
-                                    return {
-                                        ...prevOffer,
-                                        costsDTOS: updatedCostsDTOS
-                                    }
-                                })
-                            }}
-                            fullWidth
-                            margin="normal"
-                        />
-                    ))}
+                    <TextField
+                        label="Дата доставки"
+                        type="datetime-local"
+                        value={newEditOffer.deliveryTime ? newEditOffer.deliveryTime.toISOString().substring(0, 16) : ''}
+                        onChange={(e) => setNewEditOffer({...newEditOffer, deliveryTime: new Date(e.target.value)})}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Возможное время задержки (в днях)"
+                        type="number"
+                        value={newEditOffer.possibleDelayTime}
+                        onChange={(e) => setNewEditOffer({...newEditOffer, possibleDelayTime: Number(e.target.value)})}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Цена"
+                        type="number"
+                        value={newEditOffer.price}
+                        onChange={(e) => setNewEditOffer({...newEditOffer, price: Number(e.target.value)})}
+                        fullWidth
+                        margin="normal"
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenEditDialog(false)} color="secondary">

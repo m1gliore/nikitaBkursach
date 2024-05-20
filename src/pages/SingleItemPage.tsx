@@ -2,13 +2,12 @@ import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import {Container} from "../components/Container";
 import {useLocation, useNavigate} from "react-router-dom";
-import {Product} from "../types/Products";
+import {Item} from "../types/Items";
 import axios from "axios";
 import {CloudUpload, DeleteOutlined, EditOutlined} from "@mui/icons-material";
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from "@mui/material";
 import {useLocalStorage} from "react-use";
-import {DecodedToken, LocalStorageData} from "../types/Token";
-import {jwtDecode} from "jwt-decode";
+import {LocalStorageData} from "../types/Token";
 
 const MainContainer = styled.div`
   display: flex;
@@ -54,7 +53,9 @@ const RightContainer = styled.div`
 const Title = styled.h1`
 `
 
-const Desc = styled.p``
+const Desc = styled.div`
+  font-size: 1.5vw;
+`
 
 const MainImage = styled.img`
   width: 20vw;
@@ -66,44 +67,104 @@ const Image = styled.img`
   height: 12.5vh;
 `
 
-const SingleProductPage: React.FC = () => {
-    const [product, setProduct] = useState<Product>({nameProduct: "", description: "", images: []})
+const SingleItemPage: React.FC = () => {
+    const itemId = useLocation().pathname.split("/")[2]
+    const catalogId = useLocation().search.split("=")[1]
+    const [item, setItem] = useState<Item>({
+        id: parseInt(itemId, 10),
+        name: '',
+        description: new Map(),
+        type: 'PRODUCT',
+        fileIdList: [],
+        catalogId: parseInt(catalogId, 10)
+    })
     const [isEditDialogOpen, setEditDialogOpen] = useState<boolean>(false);
     const [editedName, setEditedName] = useState<string>('');
     const [editedDescription, setEditedDescription] = useState<string>('');
-    const productId = useLocation().pathname.split("/")[2]
-    const catalogId = useLocation().search.split("=")[1]
     const navigate = useNavigate()
-    const [newProduct, setNewProduct] = useState<{
-        idProduct: number,
-        nameProduct?: string,
+    const [newItem, setNewItem] = useState<{
+        idItem: number,
+        nameItem?: string,
         description?: string
-    }>({idProduct: Number(productId)});
+    }>({idItem: Number(itemId)});
     const [isImageDialogOpen, setImageDialogOpen] = useState<boolean>(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
-    const [selectedImage, setSelectedImage] = useState<number | undefined>(0)
+    const [selectedImage, setSelectedImage] = useState<string>("")
 
     const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(-1)
+    const [token, setToken] = useState<string>("")
+    const [isUser] = useState<number>(1)
+    const [itemImages, setItemImages] = useState<string[]>([])
+    const [admin, setAdmin] = useState<string>("ROLE_USER")
 
     useEffect(() => {
-        if (user?.id_company !== -1 && user?.token && user?.username) {
-            const decodedToken = jwtDecode(user.token) as DecodedToken;
-            setIsUser(decodedToken.isAdmin);
+        if (user?.token) {
+            setToken(user.token)
         }
     }, [user])
 
     useEffect(() => {
-        (async () => {
-            axios.get(`http://localhost:8080/api/products/getProduct/${productId}`)
-                .then(res => setProduct(res.data))
-        })()
-    }, [productId])
+        if (token) {
+            (async () => {
+                try {
+                    const [itemResponse, imagesResponse] = await Promise.all([
+                        axios.get(`http://localhost:8080/server/coursework-admin/api/item/${itemId}`, {
+                            headers: {
+                                Authorization: `${token}`
+                            }
+                        }),
+                        Promise.allSettled(
+                            item.fileIdList.map(async (fileId: number) => {
+                                try {
+                                    const fileResponse = await axios.get(`http://localhost:8080/server/coursework-auth/api/file/${fileId}/view`, {
+                                        headers: {
+                                            Authorization: `${token}`
+                                        },
+                                        responseType: 'arraybuffer'
+                                    });
+
+                                    const blob = new Blob([fileResponse.data], { type: fileResponse.headers['content-type'] });
+                                    return URL.createObjectURL(blob);
+                                } catch (error) {
+                                    console.error('Error fetching image:', error);
+                                    return null; // Можете вернуть что-то другое в случае ошибки
+                                }
+                            })
+                        )
+                    ]);
+
+                    if (itemResponse.status === 200) {
+                        setItem(itemResponse.data);
+                    } else {
+                        console.error('Error fetching item:', itemResponse.statusText);
+                    }
+
+                    const filteredImages = imagesResponse
+                        .filter((response) => response.status === 'fulfilled')
+                        .map((response) => response.status === 'fulfilled' ? response.value : null)
+                        .filter((image) => image !== null) as string[];
+
+                    setItemImages(filteredImages);
+
+                } catch (error) {
+                    console.error('Error fetching item and images:', error);
+                }
+
+                axios.get(`http://localhost:8080/server/coursework/api/role`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => setAdmin(res.data.role));
+
+            })();
+        }
+    }, [item.fileIdList, itemId, token]);
 
     const handleEditIconClick = () => {
         setEditDialogOpen(true);
-        setEditedName(product.nameProduct);
-        setEditedDescription(product.description);
+        setEditedName(item.name);
+        // setEditedDescription(item.description);
     }
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +175,7 @@ const SingleProductPage: React.FC = () => {
     }
 
     const handleSaveChanges = async () => {
-        await axios.put(`http://localhost:8080/api/products/updateProduct?id_catalog=${catalogId}&id_company_info=${user?.id_company}`, newProduct)
+        await axios.put(`http://localhost:8080/api/products/updateProduct`, newItem)
             .then(() => {
                 navigate(0)
                 setEditDialogOpen(false)
@@ -142,62 +203,65 @@ const SingleProductPage: React.FC = () => {
         }
     }
 
-    const deleteProduct = async () => {
-        await axios.delete(`http://localhost:8080/api/products/deleteProduct/${productId}?id_company_info=${user?.id_company}`)
+    const deleteItem = async () => {
+        await axios.delete(`http://localhost:8080/server/coursework-admin/api/item/${itemId}`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => navigate('/'))
     }
 
     return (
         <Container>
-            {isUser === 0 &&
+            {admin === "ROLE_ADMIN" &&
                 <EditIcon fontSize="large" onClick={handleEditIconClick}/>
             }
-            {isUser === 0 &&
-                <DeleteIcon fontSize="large" onClick={deleteProduct}/>
+            {admin === "ROLE_ADMIN" &&
+                <DeleteIcon fontSize="large" onClick={deleteItem}/>
             }
             <MainContainer>
                 <LeftContainer>
                     <TopContainer>
-                        {product.images.map((image, index) => {
-                            if (image.main) {
-                                return (
-                                    <MainImage
-                                        key={index}
-                                        src={"data:" + image.type + ";base64," + image.file_image}
-                                        alt="MainImage"
-                                        onClick={() => {
-                                            if (isUser === 0) {
-                                                setImageDialogOpen(true)
-                                                setSelectedImage(image.idImages)
-                                            }
-                                        }}
-                                    />
-                                )
-                            }
-                            return null
-                        })}
+                        <MainImage
+                            src={itemImages[0]}
+                            alt="MainImage"
+                            onClick={() => {
+                                if (isUser === 0) {
+                                    setImageDialogOpen(true)
+                                    setSelectedImage(itemImages[0])
+                                }
+                            }}
+                        />
                     </TopContainer>
                     <BottomContainer>
-                        {product.images.map((image, index) => (
-                            !image.main && (
-                                <Image
-                                    key={index}
-                                    src={"data:" + image.type + ";base64," + image.file_image}
-                                    alt={`${index + 1}`}
-                                    onClick={() => {
-                                        if (isUser === 0) {
-                                            setImageDialogOpen(true)
-                                            setSelectedImage(image.idImages)
-                                        }
-                                    }}
-                                />
-                            )
+                        {itemImages.slice(1).map((image, index) => (
+                            <Image
+                                key={index}
+                                src={image}
+                                alt={`${index + 1}`}
+                                onClick={() => {
+                                    if (isUser === 0) {
+                                        setImageDialogOpen(true)
+                                        setSelectedImage(image)
+                                    }
+                                }}
+                            />
                         ))}
                     </BottomContainer>
                 </LeftContainer>
                 <RightContainer>
-                    <Title>Название продукта: {product.nameProduct}</Title>
-                    <Desc>Описание: {product.description}</Desc>
+                    <Title>Название {item.type === "PRODUCT" ? "продукта" : "услуги"}: {item.name}</Title>
+                    <Desc>
+                        Описание:
+                        <ul>
+                            {Object.entries(item.description).map(([key, value], index) => (
+                                <li key={index}>
+                                    {key}: {value}
+                                </li>
+                            ))}
+                        </ul>
+                    </Desc>
                 </RightContainer>
             </MainContainer>
             <Dialog open={isEditDialogOpen} onClose={() => setEditDialogOpen(false)}>
@@ -207,7 +271,7 @@ const SingleProductPage: React.FC = () => {
                         label="Название"
                         value={editedName}
                         onChange={(e) => {
-                            setNewProduct({...newProduct, nameProduct: e.target.value})
+                            setNewItem({...newItem, nameItem: e.target.value})
                             setEditedName(e.target.value)
                         }}
                         fullWidth
@@ -217,7 +281,7 @@ const SingleProductPage: React.FC = () => {
                         label="Описание"
                         value={editedDescription}
                         onChange={(e) => {
-                            setNewProduct({...newProduct, description: e.target.value})
+                            setNewItem({...newItem, description: e.target.value})
                             setEditedDescription(e.target.value)
                         }}
                         fullWidth
@@ -270,4 +334,4 @@ const SingleProductPage: React.FC = () => {
     )
 }
 
-export default SingleProductPage
+export default SingleItemPage

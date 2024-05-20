@@ -3,7 +3,5 @@ export interface DecodedToken {
 }
 
 export type LocalStorageData = {
-    id_company: number
     token: string
-    username: string
 }

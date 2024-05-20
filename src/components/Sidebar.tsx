@@ -1,15 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import styled from "styled-components";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {
     AdminPanelSettingsOutlined,
-    BarChartOutlined, InventoryOutlined, LoginOutlined,
+    ArticleOutlined,
+    BarChartOutlined, BusinessOutlined, ExitToAppOutlined, InventoryOutlined, LoginOutlined,
     RequestQuoteOutlined,
     TabletAndroidOutlined
 } from "@mui/icons-material";
 import {useLocalStorage} from "react-use";
 import {jwtDecode} from "jwt-decode";
 import {DecodedToken, LocalStorageData} from "../types/Token";
+import axios from "axios";
 
 const Wrapper = styled.div`
   flex: 1.5;
@@ -61,36 +63,46 @@ const SidebarItemDesc = styled.span`
 
 const Sidebar: React.FC = () => {
 
-    const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(-1)
+    const [user, setUser] = useLocalStorage<LocalStorageData>('user')
+    const [isUser, setIsUser] = useState<number>(0)
+    const [token, setToken] = useState<string>("")
+    const [admin, setAdmin] = useState<string>("ROLE_USER")
+
+    const navigate = useNavigate()
 
     useEffect(() => {
-        if (user?.id_company !== -1 && user?.token && user?.username) {
-            const decodedToken = jwtDecode(user.token) as DecodedToken;
-            setIsUser(decodedToken.isAdmin);
+        if (user?.token) {
+            setToken(user.token)
         }
     }, [user])
+
+    useEffect(() => {
+        if (token) {
+            axios.get(`http://localhost:8080/server/coursework/api/role`, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            })
+                .then(res => setAdmin(res.data.role));
+        }
+    }, [token])
 
     return (
         <Wrapper>
             <Logo to="/">Pm.</Logo>
-            {isUser !== -1 &&
-                <SidebarLink to="/catalogs">
-                    <SidebarItem>
-                        <TabletAndroidOutlined/>
-                        <SidebarItemDesc>Каталог</SidebarItemDesc>
-                    </SidebarItem>
-                </SidebarLink>
-            }
-            {isUser !== -1 &&
-                <SidebarLink to="/applications">
-                    <SidebarItem>
-                        <RequestQuoteOutlined/>
-                        <SidebarItemDesc>Заявки</SidebarItemDesc>
-                    </SidebarItem>
-                </SidebarLink>
-            }
-            {(isUser === 2 || isUser === 3) &&
+            <SidebarLink to="/catalogs">
+                <SidebarItem>
+                    <TabletAndroidOutlined/>
+                    <SidebarItemDesc>Каталог</SidebarItemDesc>
+                </SidebarItem>
+            </SidebarLink>
+            <SidebarLink to="/tenders">
+                <SidebarItem>
+                    <RequestQuoteOutlined/>
+                    <SidebarItemDesc>Тендеры</SidebarItemDesc>
+                </SidebarItem>
+            </SidebarLink>
+            {admin === "ROLE_USER" &&
                 <SidebarLink to="/offers">
                     <SidebarItem>
                         <InventoryOutlined/>
@@ -98,29 +110,53 @@ const Sidebar: React.FC = () => {
                     </SidebarItem>
                 </SidebarLink>
             }
-            {isUser !== -1 &&
+            <SidebarLink to="/companies">
+                <SidebarItem>
+                    <BusinessOutlined/>
+                    <SidebarItemDesc>Компании</SidebarItemDesc>
+                </SidebarItem>
+            </SidebarLink>
+            {admin === "ROLE_ADMIN" &&
                 <SidebarLink to="/admin">
                     <SidebarItem>
                         <AdminPanelSettingsOutlined/>
-                        <SidebarItemDesc>{(isUser === 0 || isUser === 2) ? "Администратор" : "Пользователь"}</SidebarItemDesc>
+                        <SidebarItemDesc>Администратор</SidebarItemDesc>
                     </SidebarItem>
                 </SidebarLink>
             }
-            {(isUser === 0 || isUser === 2) &&
-                <SidebarLink to="/statistics">
-                    <SidebarItem>
-                        <BarChartOutlined/>
-                        <SidebarItemDesc>Статистика</SidebarItemDesc>
-                    </SidebarItem>
-                </SidebarLink>
-            }
-            {isUser === -1 &&
+            <SidebarLink to="/statistics">
+                <SidebarItem>
+                    <BarChartOutlined/>
+                    <SidebarItemDesc>Статистика</SidebarItemDesc>
+                </SidebarItem>
+            </SidebarLink>
+            {token === "" &&
                 <SidebarLink to="/login">
                     <SidebarItem>
                         <LoginOutlined/>
                         <SidebarItemDesc>Вход</SidebarItemDesc>
                     </SidebarItem>
                 </SidebarLink>
+            }
+            {token !== "" &&
+                <SidebarItem>
+                    <ExitToAppOutlined onClick={async () => {
+                        await axios.delete(`http://localhost:8080/server/coursework/api/logout/single`, {
+                            headers: {
+                                Authorization: `${token}`
+                            },
+                            params: {
+                                token: token
+                            }
+                        })
+                            .then(() => {
+                                setUser({token: ""})
+                                navigate("/")
+                                navigate(0)
+                            })
+                    }}/>
+                    <SidebarItemDesc>Выход</SidebarItemDesc>
+                </SidebarItem>
             }
         </Wrapper>
     )

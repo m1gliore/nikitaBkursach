@@ -1,22 +1,34 @@
-import {Product} from "./Products";
+import {CompanyInfo} from "./Company";
 
 export type Offer = {
-    idOffers?: number
-    idUser?: number
-    idProduct?: number
-    nameOffer?: string
-    datePublication?: string
-    allCost?: number
-    count?: number
-    isAccept?: boolean
-    productDTO?: Product
-    costsDTOS?: Array<Cost>
+    id?: number
+    name?: string
+    description?: string
+    deliveryTime?: Date
+    possibleDelayTime?: number
+    price?: number
+    companyId?: number
+    tenderId?: number
+    status?: OfferStatus
+    companyName?: string
+    company?: CompanyInfo
+    created?: Date
+    profile?: UserProfile
 }
+
+export type OfferStatus = 'ACCEPTED' | 'REJECTED' | 'ACTIVE'
 
 export type Cost = {
     costAll?: number
-    idApplicationInfo?: number
+    idTenderInfo?: number
     address?: string
     acceptCount?: number
     idCost?: number
+}
+
+export type UserProfile = {
+    id?: number
+    fullName?: string
+    created?: Date
+    avatar?: string
 }

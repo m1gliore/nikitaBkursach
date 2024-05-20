@@ -19,10 +19,8 @@ import {Container} from "../components/Container";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
 import {Catalog} from "../types/Catalogs";
-import {CompanyInfo} from "../types/Company";
 import {useLocalStorage} from "react-use";
-import {DecodedToken, LocalStorageData} from "../types/Token";
-import {jwtDecode} from "jwt-decode";
+import {LocalStorageData} from "../types/Token";
 
 const Title = styled.h1`
 `
@@ -33,31 +31,43 @@ const CatalogsPage: React.FC = () => {
     const [openAddCatalogDialog, setOpenAddCatalogDialog] = useState<boolean>(false);
     const [openEditCatalogDialog, setOpenEditCatalogDialog] = useState<boolean>(false);
     const [openDeleteCatalogDialog, setOpenDeleteCatalogDialog] = useState<boolean>(false);
-    const [newCatalog, setNewCatalog] = useState<Catalog>({nameCatalog: '', description: '', idCompanyInfo: 0});
-    const [editCatalog, setEditCatalog] = useState<Catalog>({idCatalog: 0, nameCatalog: '', description: '', idCompanyInfo: 0});
+    const [newCatalog, setNewCatalog] = useState<Catalog>({name: '', description: ''});
+    const [idEditCatalog, setIdEditCatalog] = useState<number>(0)
+    const [editCatalog, setEditCatalog] = useState<Catalog>({
+        name: '',
+        description: ''
+    });
     const [deleteCatalogId, setDeleteCatalogId] = useState<number>(0)
-    const [companies, setCompanies] = useState<Array<CompanyInfo>>([]);
     const navigate = useNavigate();
-
+    const [token, setToken] = useState<string>("")
     const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(-1)
+    const [admin, setAdmin] = useState<string>("ROLE_USER")
 
     useEffect(() => {
-        if (user?.id_company !== -1 && user?.token && user?.username) {
-            const decodedToken = jwtDecode(user.token) as DecodedToken;
-            setIsUser(decodedToken.isAdmin);
+        if (user?.token) {
+            setToken(user.token)
         }
     }, [user])
 
     useEffect(() => {
-        (async () => {
-            axios.get(`http://localhost:8080/api/catalogs/pageCatalogs`)
-                .then(res => setCatalogs(res.data.content));
+        if (token) {
+            (async () => {
+                axios.get(`http://localhost:8080/server/coursework-auth/api/catalog`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => setCatalogs(res.data.list));
 
-            axios.get(`http://localhost:8080/api/companies/all`)
-                .then(res => setCompanies(res.data.content));
-        })();
-    }, []);
+                axios.get(`http://localhost:8080/server/coursework/api/role`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => setAdmin(res.data.role));
+            })();
+        }
+    }, [token]);
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPg(newPage);
@@ -68,7 +78,11 @@ const CatalogsPage: React.FC = () => {
     }
 
     const handleSaveCatalog = () => {
-        axios.post('http://localhost:8080/api/catalogs/saveCatalog', newCatalog)
+        axios.post('http://localhost:8080/server/coursework-admin/api/catalog', newCatalog, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => {
                 setOpenAddCatalogDialog(false)
                 navigate(0)
@@ -80,7 +94,11 @@ const CatalogsPage: React.FC = () => {
     }
 
     const handleSaveEditedCatalog = () => {
-        axios.put('http://localhost:8080/api/catalogs/updateCatalog', editCatalog)
+        axios.put(`http://localhost:8080/server/coursework-admin/api/catalog/${idEditCatalog}`, editCatalog, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => {
                 setOpenEditCatalogDialog(false)
                 navigate(0)
@@ -92,7 +110,11 @@ const CatalogsPage: React.FC = () => {
     }
 
     const handleConfirmDeleteCatalog = () => {
-        axios.delete(`http://localhost:8080/api/catalogs/deleteCatalog/${deleteCatalogId}?id_company_info=${user?.id_company}`)
+        axios.delete(`http://localhost:8080/server/coursework-admin/api/catalog/${deleteCatalogId}`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
             .then(() => {
                 setOpenDeleteCatalogDialog(false)
                 navigate(0)
@@ -103,17 +125,19 @@ const CatalogsPage: React.FC = () => {
         <Container>
             <Title>Каталоги</Title>
             <div>
-                {isUser === 0 &&
-                    <Button style={{marginRight: "2.5vw"}} variant="contained" color="primary" onClick={handleAddCatalog}>
+                {admin === "ROLE_ADMIN" &&
+                    <Button style={{marginRight: "2.5vw"}} variant="contained" color="primary"
+                            onClick={handleAddCatalog}>
                         Добавить каталог
                     </Button>
                 }
-                {isUser === 0 &&
-                    <Button style={{marginRight: "2.5vw"}} variant="contained" color="success" onClick={handleEditCatalog}>
+                {admin === "ROLE_ADMIN" &&
+                    <Button style={{marginRight: "2.5vw"}} variant="contained" color="success"
+                            onClick={handleEditCatalog}>
                         Изменить каталог
                     </Button>
                 }
-                {isUser === 0 &&
+                {admin === "ROLE_ADMIN" &&
                     <Button variant="contained" color="error" onClick={handleDeleteCatalog}>
                         Удалить каталог
                     </Button>
@@ -131,8 +155,8 @@ const CatalogsPage: React.FC = () => {
                     <TableBody>
                         {catalogs.slice(pg * 7, pg * 7 + 7).map((catalog, index) => (
                             <TableRow key={index} style={{cursor: "pointer"}}
-                                      onClick={() => navigate(`/products?catalog=${catalog.idCatalog}`)}>
-                                <TableCell>{catalog.nameCatalog}</TableCell>
+                                      onClick={() => navigate(`/items?catalog=${catalog.id}`)}>
+                                <TableCell>{catalog.name}</TableCell>
                                 <TableCell>{catalog.description}</TableCell>
                             </TableRow>
                         ))}
@@ -146,8 +170,8 @@ const CatalogsPage: React.FC = () => {
                 <DialogContent>
                     <TextField
                         label="Название"
-                        value={newCatalog.nameCatalog}
-                        onChange={(e) => setNewCatalog({...newCatalog, nameCatalog: e.target.value})}
+                        value={newCatalog.name}
+                        onChange={(e) => setNewCatalog({...newCatalog, name: e.target.value})}
                         fullWidth
                         margin="normal"
                     />
@@ -158,19 +182,6 @@ const CatalogsPage: React.FC = () => {
                         fullWidth
                         margin="normal"
                     />
-                    {/* Добавляем выпадающий список для выбора компании */}
-                    <InputLabel id="company-select-label">Компания</InputLabel>
-                    <Select
-                        labelId="company-select-label"
-                        id="company-select"
-                        value={newCatalog.idCompanyInfo}
-                        onChange={(e) => setNewCatalog({...newCatalog, idCompanyInfo: e.target.value as number})}
-                        fullWidth
-                    >
-                        {companies.map((company, index) => (
-                            <MenuItem key={index} value={company.idCompanyInfo}>{company.nameCompany}</MenuItem>
-                        ))}
-                    </Select>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenAddCatalogDialog(false)} color="secondary">
@@ -188,18 +199,18 @@ const CatalogsPage: React.FC = () => {
                     <Select
                         labelId="catalog-select-label-edit"
                         id="catalog-select-edit"
-                        value={editCatalog.idCatalog}
-                        onChange={(e) => setEditCatalog({...editCatalog, idCatalog: e.target.value as number})}
+                        value={idEditCatalog}
+                        onChange={(e) => setIdEditCatalog(e.target.value as number)}
                         fullWidth
                     >
                         {catalogs.map((catalog, index) => (
-                            <MenuItem key={index} value={catalog.idCatalog}>{catalog.nameCatalog}</MenuItem>
+                            <MenuItem key={index} value={catalog.id}>{catalog.name}</MenuItem>
                         ))}
                     </Select>
                     <TextField
                         label="Название"
-                        value={editCatalog.nameCatalog}
-                        onChange={(e) => setEditCatalog({...editCatalog, nameCatalog: e.target.value})}
+                        value={editCatalog.name}
+                        onChange={(e) => setEditCatalog({...editCatalog, name: e.target.value})}
                         fullWidth
                         margin="normal"
                     />
@@ -210,18 +221,6 @@ const CatalogsPage: React.FC = () => {
                         fullWidth
                         margin="normal"
                     />
-                    <InputLabel id="company-select-label-edit">Компания</InputLabel>
-                    <Select
-                        labelId="company-select-label-edit"
-                        id="company-select-edit"
-                        value={editCatalog.idCompanyInfo}
-                        onChange={(e) => setEditCatalog({...editCatalog, idCompanyInfo: e.target.value as number})}
-                        fullWidth
-                    >
-                        {companies.map((company, index) => (
-                            <MenuItem key={index} value={company.idCompanyInfo}>{company.nameCompany}</MenuItem>
-                        ))}
-                    </Select>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenAddCatalogDialog(false)} color="secondary">
@@ -244,7 +243,7 @@ const CatalogsPage: React.FC = () => {
                         fullWidth
                     >
                         {catalogs.map((catalog, index) => (
-                            <MenuItem key={index} value={catalog.idCatalog}>{catalog.nameCatalog}</MenuItem>
+                            <MenuItem key={index} value={catalog.id}>{catalog.name}</MenuItem>
                         ))}
                     </Select>
                 </DialogContent>

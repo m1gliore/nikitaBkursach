@@ -25,12 +25,12 @@ const LoginPage: React.FC = () => {
     const onLogin: SubmitHandler<LoginFormInput> = async (data) => {
 
         const requestBody = {
-            username: data.username,
+            email: data.email,
             password: data.password
         }
 
         try {
-            await axios.post('http://localhost:8080/api/users/authentication', requestBody).then((res) => {
+            await axios.post('http://localhost:8080/server/coursework/api/auth', requestBody).then((res) => {
                 setUser(res.data)
                 navigate("/")
                 navigate(0)
@@ -44,23 +44,25 @@ const LoginPage: React.FC = () => {
         }
     }
 
+    // {...register('username', {
+    //     required: 'Имя пользователя обязательно',
+    //     pattern: {
+    //         value: /^[A-ZА-Я]\w*$/,
+    //         message: 'Имя пользователя должно начинаться с заглавной буквы'
+    //     }
+    // })}
+
     return (
         <Container>
             <Main>
                 <Title>Войти в аккаунт</Title>
                 <Form onSubmit={handleSubmit(onLogin)}>
                     <Input
-                        {...register('username', {
-                            required: 'Имя пользователя обязательно',
-                            pattern: {
-                                value: /^[A-Z]\w*$/,
-                                message: 'Имя пользователя должно начинаться с заглавной буквы'
-                            }
-                        })}
-                        type="text"
+                        {...register('email')}
+                        type="email"
                         placeholder="Имя пользователя"
                     />
-                    {errors.username && <p style={{color: "red", textAlign: "center"}}>{errors.username.message}</p>}
+                    {errors.email && <p style={{color: "red", textAlign: "center"}}>{errors.email.message}</p>}
                     <Input
                         {...register('password', {
                             required: 'Пароль обязателен',

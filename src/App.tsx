@@ -5,17 +5,18 @@ import styled from "styled-components";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 import OffersPage from "./pages/OffersPage";
-import ApplicationsPage from "./pages/ApplicationsPage";
-import ProductsPage from "./pages/ProductsPage";
+import TendersPage from "./pages/TendersPage";
+import ItemsPage from "./pages/ItemsPage";
 import AdminPage from "./pages/AdminPage";
 import ErrorPage from "./pages/ErrorPage";
 import LoginPage from "./pages/LoginPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import CatalogsPage from "./pages/CatalogsPage";
-import SingleProductPage from "./pages/SingleProductPage";
+import SingleItemPage from "./pages/SingleItemPage";
 import {useLocalStorage} from "react-use";
-import {DecodedToken, LocalStorageData} from "./types/Token";
-import {jwtDecode} from "jwt-decode";
+import {LocalStorageData} from "./types/Token";
+import CompanyPage from "./pages/CompanyPage";
+import axios from "axios";
 
 const Wrapper = styled.div`
   display: flex;
@@ -31,14 +32,25 @@ const Main = styled.div`
 const App: React.FC = () => {
 
     const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(-1)
+    const [token, setToken] = useState<string>("")
+    const [admin, setAdmin] = useState<string>("ROLE_USER")
 
     useEffect(() => {
-        if (user?.id_company !== -1 && user?.token && user?.username) {
-            const decodedToken = jwtDecode(user.token) as DecodedToken;
-            setIsUser(decodedToken.isAdmin);
+        if (user?.token) {
+            setToken(user.token)
         }
     }, [user])
+
+    useEffect(() => {
+        if (token) {
+            axios.get(`http://localhost:8080/server/coursework/api/role`, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            })
+                .then(res => setAdmin(res.data.role));
+        }
+    }, [token])
 
     return (
         <Wrapper>
@@ -48,30 +60,15 @@ const App: React.FC = () => {
                     <Routes>
                         <Route path="*" element={<ErrorPage/>}/>
                         <Route path="/" element={<HomePage/>}/>
-                        {(isUser === 2 || isUser === 3) && (
-                            <Route path="/offers" element={<OffersPage/>}/>
-                            )}
-                        {isUser !== -1 &&
-                            <Route path="/applications" element={<ApplicationsPage/>}/>
-                        }
-                        {isUser === -1 &&
-                            <Route path="/products" element={<ProductsPage/>}/>
-                        }
-                        {isUser !== -1 &&
-                            <Route path="/admin" element={<AdminPage/>}/>
-                        }
-                        {isUser === - 1 &&
-                            <Route path="/login" element={<LoginPage/>}/>
-                        }
-                        {(isUser === 0 || isUser === 2) &&
-                            <Route path="/statistics" element={<StatisticsPage/>}/>
-                        }
-                        {isUser !== -1 &&
-                            <Route path="/catalogs" element={<CatalogsPage/>}/>
-                        }
-                        {isUser !== -1 &&
-                            <Route path="/products/:productId" element={<SingleProductPage/>}/>
-                        }
+                        {admin === "ROLE_USER" && <Route path="/offers" element={<OffersPage/>}/>}
+                        <Route path="/tenders" element={<TendersPage/>}/>
+                        <Route path="/items" element={<ItemsPage/>}/>
+                        {admin === "ROLE_ADMIN" && <Route path="/admin" element={<AdminPage/>}/>}
+                        <Route path="/login" element={<LoginPage/>}/>
+                        <Route path="/statistics" element={<StatisticsPage/>}/>
+                        <Route path="/catalogs" element={<CatalogsPage/>}/>
+                        <Route path="/items/:itemId" element={<SingleItemPage/>}/>
+                        <Route path="/companies" element={<CompanyPage/>}/>
                     </Routes>
                 </Main>
                 <Footer/>

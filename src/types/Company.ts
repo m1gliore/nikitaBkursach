@@ -1,5 +1,7 @@
 export type CompanyInfo = {
-    idCompanyInfo?: number
-    nameCompany: string
-    description: string
+    id?: number
+    name?: string
+    address?: string
+    uniqNumber?: string
+    description?: string
 }
