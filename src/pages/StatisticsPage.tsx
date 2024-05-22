@@ -2,9 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {Container} from "../components/Container";
 import styled from "styled-components";
 import axios from "axios";
-import {Tooltip, PieChart, Pie, Cell} from 'recharts';
+import {Tooltip, PieChart, Pie, Cell, BarChart, CartesianGrid, XAxis, YAxis, Legend, Bar} from 'recharts';
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "../types/Token";
+import {Company} from "../types/Company";
+import {InputLabel, MenuItem, Select} from "@mui/material";
+import {Segment} from "../types/Segments";
 
 const Title = styled.h1``;
 
@@ -12,9 +15,17 @@ const StatisticsPage: React.FC = () => {
     const [user,] = useLocalStorage<LocalStorageData>('user');
     const [token, setToken] = useState<string>("");
     const [admin, setAdmin] = useState<string>("")
+    const [companies, setCompanies] = useState<Company[]>([])
+    const [idCompany, setIdCompany] = useState<number>(0)
+    const [segments, setSegments] = useState<Segment[]>([])
+    const [idSegment, setIdSegment] = useState<number>(0)
+    const [financialValueType, setFinancialValueType] = useState<string>('VALUE_NET_INCOME')
 
     const [userData, setUserData] = useState<{ name: string, value: number }[]>([]);
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+    const [currentStat, setCurrentStat] = useState<string>('stat1')
+
+    const [adminData1, setAdminData1] = useState<{ uuid: string, value: number }[]>([]);
 
     useEffect(() => {
         if (user?.token) {
@@ -43,19 +54,114 @@ const StatisticsPage: React.FC = () => {
                         value: 100 - (res.data.value * 100)
                     }]));
 
-                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company/statistic`, {
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company/${idCompany}/statistic/scoring/dynamic`, {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    params: {
+                        type: financialValueType
+                    }
+                })
+                    .then(res => {
+                        const transformedData = Object.entries(res.data.loans).map(([key, value]) => {
+                            const uuidMatch = key.match(/uuid=([a-f0-9\-]+)/);
+                            return {
+                                uuid: uuidMatch ? uuidMatch[1] : key,
+                                value: Number(value)
+                            };
+                        });
+                        setAdminData1(transformedData);
+                    });
+
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company`, {
                     headers: {
                         Authorization: `${token}`
                     }
                 })
-                    .then(res => console.log(res.data));
+                    .then(res => setCompanies(res.data.list));
+
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/segment`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => setSegments(res.data.list));
             })();
         }
-    }, [admin, token]);
+    }, [admin, financialValueType, idCompany, token]);
 
     return (
         <Container>
             <Title>Статистика</Title>
+            <div style={{display: 'flex', gap: '15vw'}}>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <InputLabel id="company-select-label-edit">Компания</InputLabel>
+                    <Select
+                        labelId="company-select-label-edit"
+                        id="company-select-edit"
+                        value={idCompany}
+                        onChange={async (e) => setIdCompany(e.target.value as number)}
+                        fullWidth
+                        sx={{width: '10vw'}}
+                    >
+                        {companies.map((company, index) => (
+                            <MenuItem key={index} value={company.id}>{company.name}</MenuItem>
+                        ))}
+                    </Select>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <InputLabel id="segment-select-label-edit">Сегмент</InputLabel>
+                    <Select
+                        labelId="segment-select-label-edit"
+                        id="segment-select-edit"
+                        value={idSegment}
+                        onChange={async (e) => setIdSegment(e.target.value as number)}
+                        fullWidth
+                        sx={{width: '10vw'}}
+                    >
+                        {segments.map((segment, index) => (
+                            <MenuItem key={index} value={segment.id}>{segment.name}</MenuItem>
+                        ))}
+                    </Select>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <InputLabel id="fin-select-label-edit">Сегмент</InputLabel>
+                    <Select
+                        labelId="fin-select-label-edit"
+                        id="fin-select-edit"
+                        value={financialValueType}
+                        onChange={async (e) => setFinancialValueType(e.target.value)}
+                        fullWidth
+                        sx={{width: '10vw'}}
+                    >
+                        <MenuItem value='VALUE_NET_INCOME'>Чистая прибыль</MenuItem>
+                        <MenuItem value='VALUE_TOTAL_ASSETS'>Общие активы</MenuItem>
+                        <MenuItem value='VALUE_TOTAL_EQUITY'>Общий капитал</MenuItem>
+                        <MenuItem value='VALUE_TOTAL_LIABILITIES'>Общие обязательства</MenuItem>
+                        <MenuItem value='VALUE_SALES_REVENUE'>Выручка от продаж</MenuItem>
+                        <MenuItem value='VALUE_MARKET_VALUE'>Рыночная стоимость</MenuItem>
+                        <MenuItem value='VALUE_CASH_FLOW'>Денежный поток</MenuItem>
+                        <MenuItem value='VALUE_AMOUNT'>Сумма</MenuItem>
+                        <MenuItem value='VALUE_ALL'>Общая прибыль</MenuItem>
+                    </Select>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <InputLabel id="stat-select-label-edit">Статистика</InputLabel>
+                    <Select
+                        labelId="stat-select-label-edit"
+                        id="stat-select-edit"
+                        value={currentStat}
+                        onChange={async (e) => setCurrentStat(e.target.value)}
+                        fullWidth
+                        sx={{width: '10vw'}}
+                    >
+                        <MenuItem value='stat1'>Динамика скоринга</MenuItem>
+                        <MenuItem value='stat2'>Статистика скоринга по сегменту компании</MenuItem>
+                        <MenuItem value='stat3'>Статистика принятых займов по компании</MenuItem>
+                        <MenuItem value='stat4'>Общая статистика принятых займов по всем компаниям</MenuItem>
+                    </Select>
+                </div>
+            </div>
             {admin === "ROLE_USER" && userData.length > 0 && (
                 <>
                     <h2>Процент принятых и отклоненных заявок</h2>
@@ -70,11 +176,24 @@ const StatisticsPage: React.FC = () => {
                             dataKey="value"
                         >
                             {userData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                             ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip/>
                     </PieChart>
+                </>
+            )}
+            {admin === "ROLE_ADMIN" && currentStat === 'stat1' && (
+                <>
+                    <h2>Динамика скоринга</h2>
+                    <BarChart width={600} height={300} data={adminData1}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="uuid" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
                 </>
             )}
         </Container>
