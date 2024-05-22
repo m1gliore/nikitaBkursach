@@ -26,6 +26,9 @@ const StatisticsPage: React.FC = () => {
     const [currentStat, setCurrentStat] = useState<string>('stat1')
 
     const [adminData1, setAdminData1] = useState<{ uuid: string, value: number }[]>([]);
+    const [adminData2, setAdminData2] = useState<{ uuid: string, value: number }[]>([]);
+    const [adminData3, setAdminData3] = useState<{ name: string, value: number }[]>([]);
+    const [adminData4, setAdminData4] = useState<{ name: string, value: number }[]>([]);
 
     useEffect(() => {
         if (user?.token) {
@@ -73,6 +76,53 @@ const StatisticsPage: React.FC = () => {
                         setAdminData1(transformedData);
                     });
 
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company/${idCompany}/segment/${idSegment}/statistic/scoring`, {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    params: {
+                        type: financialValueType
+                    }
+                })
+                    .then(res => {
+                        console.log(res.data)
+                        const transformedData = Object.entries(res.data.loans).map(([key, value]) => {
+                            const uuidMatch = key.match(/uuid=([a-f0-9\-]+)/);
+                            return {
+                                uuid: uuidMatch ? uuidMatch[1] : key,
+                                value: Number(value)
+                            };
+                        });
+                        setAdminData2(transformedData);
+                    });
+
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company/${idCompany}/statistic/loan`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => setAdminData3([{name: 'Принято', value: (res.data.value * 100)}, {
+                        name: 'Отклонено',
+                        value: 100 - (res.data.value * 100)
+                    }]));
+
+                admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company/statistic`, {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                })
+                    .then(res => {
+                        console.log(res.data)
+                        const transformedData2 = Object.entries(res.data).map(([key, value]) => {
+                            const nameMatch = key.match(/name=([^,]+)/);
+                            return {
+                                name: nameMatch ? nameMatch[1] : key,
+                                value: (Number(value) * 100)
+                            };
+                        }).filter(item => !isNaN(item.value));
+                        setAdminData4(transformedData2)
+                    });
+
                 admin === "ROLE_ADMIN" && axios.get(`http://localhost:8080/server/coursework-admin/api/company`, {
                     headers: {
                         Authorization: `${token}`
@@ -88,7 +138,7 @@ const StatisticsPage: React.FC = () => {
                     .then(res => setSegments(res.data.list));
             })();
         }
-    }, [admin, financialValueType, idCompany, token]);
+    }, [admin, financialValueType, idCompany, idSegment, token]);
 
     return (
         <Container>
@@ -189,6 +239,53 @@ const StatisticsPage: React.FC = () => {
                     <BarChart width={600} height={300} data={adminData1}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="uuid" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                </>
+            )}
+            {admin === "ROLE_ADMIN" && currentStat === 'stat2' && (
+                <>
+                    <h2>Статистика скоринга по сегменту компании</h2>
+                    <BarChart width={600} height={300} data={adminData2}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="uuid" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                </>
+            )}
+            {admin === "ROLE_ADMIN" && currentStat === 'stat3' && (
+                <>
+                    <h2>Статистика принятых займов по компании</h2>
+                    <PieChart width={400} height={400}>
+                        <Pie
+                            data={adminData3}
+                            cx={200}
+                            cy={200}
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {adminData3.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                            ))}
+                        </Pie>
+                        <Tooltip/>
+                    </PieChart>
+                </>
+            )}
+            {admin === "ROLE_ADMIN" && currentStat === 'stat4' && (
+                <>
+                    <h2>Общая статистика принятых займов по всем компаниям</h2>
+                    <BarChart width={600} height={300} data={adminData4}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
