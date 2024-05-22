@@ -1,11 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import styled from "styled-components";
 import {Link, useNavigate} from "react-router-dom";
 import {
-    AdminPanelSettingsOutlined,
     BarChartOutlined,
     CreditCardOutlined,
-    ExitToAppOutlined,
+    ExitToAppOutlined, NotificationsOutlined,
     PersonOutlined,
     RequestQuoteOutlined,
     ScoreOutlined,
@@ -14,6 +13,8 @@ import {
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "../types/Token";
 import axios from "axios";
+import {Notification} from "../types/Notification";
+import {Badge, List, ListItem, ListItemText, Popover} from "@mui/material";
 
 const Wrapper = styled.div`
   flex: 1.5;
@@ -64,11 +65,40 @@ const SidebarItemDesc = styled.span`
   text-align: center;
 `
 
+const NotificationPopover = styled(Popover)`
+  .MuiPopover-paper {
+    padding: 1rem;
+    max-width: 300px;
+  }
+`
+
+const Notifications = styled(NotificationsOutlined)`
+  cursor: pointer;
+
+  &:hover {
+    opacity: .8;
+  }
+`
+
+const NavItem = styled.div`
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: .8;
+  }
+`
+
 const Sidebar: React.FC = () => {
 
     const [user, setUser] = useLocalStorage<LocalStorageData>('user')
     const [token, setToken] = useState<string>("")
     const [admin, setAdmin] = useState<string>("")
+    const [notifications, setNotifications] = useState<Array<Notification>>([])
+    const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
+    const open = Boolean(anchorEl)
+    const id = open ? 'simple-popover' : undefined
 
     const navigate = useNavigate()
 
@@ -86,12 +116,65 @@ const Sidebar: React.FC = () => {
                 }
             })
                 .then(res => setAdmin(res.data.role));
+
         }
     }, [token])
+
+    const checkForUpdates = useCallback(async () => {
+        if (token) {
+            await axios.get(`http://localhost:8080/server/coursework-auth/api/notification`, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            })
+                .then(res => {
+                    if (res.status !== 200) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return res;
+                })
+                .then(res => {
+                    setNotifications(res.data.notifications);
+                    setTimeout(checkForUpdates, 2000);
+                })
+                .catch(err => {
+                    alert(`There was a problem with the fetch operation: ${err}`);
+                    setTimeout(checkForUpdates, 2000);
+                });
+        }
+    }, [token]);
+
+    useEffect(() => {
+        checkForUpdates();
+    }, [checkForUpdates]);
+
+    const handleNotificationsClick = (event: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+        // @ts-ignore
+        setAnchorEl(event.currentTarget)
+    }
+
+    const handleNotificationsClose = async (id?: number) => {
+        setAnchorEl(null)
+        if (id) {
+            await axios.delete(`http://localhost:8080/server/coursework-auth/api/notification/${id}`, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            })
+                .then(() => {
+                    checkForUpdates()
+                })
+        }
+    }
 
     return (
         <Wrapper>
             <Logo to="/">Bank.</Logo>
+            {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
+                <Badge badgeContent={notifications.length} color="secondary">
+                    <Notifications onClick={handleNotificationsClick}/>
+                </Badge>
+            }
             {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
                 <SidebarLink to="/segments">
                     <SidebarItem>
@@ -184,6 +267,34 @@ const Sidebar: React.FC = () => {
                     <SidebarItemDesc>Выход</SidebarItemDesc>
                 </SidebarItem>
             }
+            <NotificationPopover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={() => handleNotificationsClose()}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <List>
+                    {notifications.map((notification, index) => {
+                        return (
+                            <ListItem key={index}>
+                                <NavItem style={{color: "black"}}
+                                         onClick={() => handleNotificationsClose(notification.notificationId)}
+                                >
+                                    <ListItemText primary={notification.message}/>
+                                </NavItem>
+                            </ListItem>
+                        )
+                    })}
+                </List>
+            </NotificationPopover>
         </Wrapper>
     )
 }
