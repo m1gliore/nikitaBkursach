@@ -5,7 +5,7 @@ import {SubmitHandler, useForm} from "react-hook-form";
 import {LoginFormInput} from "../types/Forms";
 import axios from "axios";
 import {Button, Form, Input} from "../components/FormContainer";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useLocalStorage} from "react-use";
 
 const Title = styled.h1``
@@ -14,6 +14,11 @@ const Main = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+`
+
+const Registration = styled(Link)`
+  color: rgb(0, 0, 0);
+  text-decoration: none;
 `
 
 const LoginPage: React.FC = () => {
@@ -30,7 +35,7 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            await axios.post('http://localhost:8080/server/coursework/api/auth', requestBody).then((res) => {
+            await axios.post('http://localhost:8080/server/coursework/api/singIn', requestBody).then((res) => {
                 setUser(res.data)
                 navigate("/")
                 navigate(0)
@@ -44,14 +49,6 @@ const LoginPage: React.FC = () => {
         }
     }
 
-    // {...register('username', {
-    //     required: 'Имя пользователя обязательно',
-    //     pattern: {
-    //         value: /^[A-ZА-Я]\w*$/,
-    //         message: 'Имя пользователя должно начинаться с заглавной буквы'
-    //     }
-    // })}
-
     return (
         <Container>
             <Main>
@@ -60,7 +57,7 @@ const LoginPage: React.FC = () => {
                     <Input
                         {...register('email')}
                         type="email"
-                        placeholder="Имя пользователя"
+                        placeholder="Email"
                     />
                     {errors.email && <p style={{color: "red", textAlign: "center"}}>{errors.email.message}</p>}
                     <Input
@@ -76,6 +73,9 @@ const LoginPage: React.FC = () => {
                     />
                     {errors.password && <p style={{color: "red", textAlign: "center"}}>{errors.password.message}</p>}
                     <Button type="submit">Войти</Button>
+                    <div style={{display: "flex", justifyContent: "center"}}>
+                        <Registration to="/signup">Зарегистрироваться</Registration>
+                    </div>
                 </Form>
             </Main>
         </Container>

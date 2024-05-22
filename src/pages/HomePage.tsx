@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from "styled-components";
 import {Container} from "../components/Container";
-import homePagePicture from "../assets/images/procurement-banner-01-03-22.png"
+import homePagePicture from "../assets/images/people-taking-out-money-from-the-bank-concept-illustration_114360-12881.jpg"
 
 const MainHeader = styled.h1``
 
@@ -17,8 +17,8 @@ const Image = styled.img`
 const HomePage: React.FC = () => {
     return (
         <Container>
-            <MainHeader>Программное средство для эффективных закупок и контроля договоров</MainHeader>
-            <Text>Оптимизируйте и автоматизируйте процессы закупок, контроля исполнения договоров, аналитики и отчетности в вашем бизнесе с помощью нашего программного обеспечения.</Text>
+            <MainHeader>Сайт для оценки кредитозаемщиков</MainHeader>
+            <Text>Оценивайте кредиты с помощью нашего сайта.</Text>
             <Image src={homePagePicture} alt="Изображения на главной (ЭЦП)"/>
         </Container>
     )

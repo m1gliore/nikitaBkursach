@@ -4,19 +4,19 @@ import HomePage from "./pages/HomePage";
 import styled from "styled-components";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
-import OffersPage from "./pages/OffersPage";
-import TendersPage from "./pages/TendersPage";
-import ItemsPage from "./pages/ItemsPage";
-import AdminPage from "./pages/AdminPage";
 import ErrorPage from "./pages/ErrorPage";
 import LoginPage from "./pages/LoginPage";
 import StatisticsPage from "./pages/StatisticsPage";
-import CatalogsPage from "./pages/CatalogsPage";
-import SingleItemPage from "./pages/SingleItemPage";
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "./types/Token";
 import CompanyPage from "./pages/CompanyPage";
 import axios from "axios";
+import RegistrationPage from "./pages/RegistrationPage";
+import SegmentPage from "./pages/SegmentPage";
+import ScoringMethodsPage from "./pages/ScoringMethodsPage";
+import UserProfile from "./pages/UserProfile";
+import FinancialDataPage from "./pages/FinancialDataPage";
+import LoanPage from "./pages/LoanPage";
 
 const Wrapper = styled.div`
   display: flex;
@@ -60,15 +60,16 @@ const App: React.FC = () => {
                     <Routes>
                         <Route path="*" element={<ErrorPage/>}/>
                         <Route path="/" element={<HomePage/>}/>
-                        {admin === "ROLE_USER" && <Route path="/offers" element={<OffersPage/>}/>}
-                        <Route path="/tenders" element={<TendersPage/>}/>
-                        <Route path="/items" element={<ItemsPage/>}/>
-                        {admin === "ROLE_ADMIN" && <Route path="/admin" element={<AdminPage/>}/>}
+                        {/*{admin === "ROLE_ADMIN" && <Route path="/admin" element={<AdminPage/>}/>}*/}
                         <Route path="/login" element={<LoginPage/>}/>
-                        <Route path="/statistics" element={<StatisticsPage/>}/>
-                        <Route path="/catalogs" element={<CatalogsPage/>}/>
-                        <Route path="/items/:itemId" element={<SingleItemPage/>}/>
+                        <Route path="/signup" element={<RegistrationPage/>}/>
+                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/statistics" element={<StatisticsPage/>}/>}
                         <Route path="/companies" element={<CompanyPage/>}/>
+                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/segments" element={<SegmentPage/>}/>}
+                        {admin === "ROLE_ADMIN" && <Route path="/scoring" element={<ScoringMethodsPage/>}/>}
+                        {admin === "ROLE_USER" && <Route path="/user" element={<UserProfile/>}/>}
+                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/finance" element={<FinancialDataPage/>}/>}
+                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/loans" element={<LoanPage/>}/>}
                     </Routes>
                 </Main>
                 <Footer/>

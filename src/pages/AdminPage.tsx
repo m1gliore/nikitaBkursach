@@ -7,11 +7,9 @@ import {SubmitHandler, useForm} from "react-hook-form";
 import {CompanyInfoFormInput, UserFormInput} from "../types/Forms";
 import axios from "axios";
 import {useNavigate} from 'react-router-dom';
-import {CompanyInfo} from "../types/Company";
+import {Company} from "../types/Company";
 import {useLocalStorage} from "react-use";
-import {jwtDecode} from "jwt-decode";
-import {DecodedToken, LocalStorageData} from "../types/Token";
-import {MenuItem} from "@mui/material";
+import {LocalStorageData} from "../types/Token";
 
 const AdminIcon = styled(SupervisorAccountOutlined)`
   position: absolute;
@@ -42,11 +40,10 @@ const AdminPage: React.FC = () => {
     const {register: registerAdmin, handleSubmit: handleSubmitAdmin} = useForm<UserFormInput>();
     const navigate = useNavigate()
     const [companyId, setCompanyId] = useState<number>(0)
-    const [currentUserAdd, setCurrentUserAdd] = useState<string>("")
     const [user,] = useLocalStorage<LocalStorageData>('user')
     const [token, setToken] = useState<string>("")
     const [activeAction, setActiveAction] = useState<string>("add")
-    const [companies, setCompanies] = useState<CompanyInfo[]>([])
+    const [companies, setCompanies] = useState<Company[]>([])
     const [currentCompanyId, setCurrentCompanyId] = useState<number>(0)
 
     useEffect(() => {

@@ -1,7 +1,8 @@
-export type CompanyInfo = {
+export type Company = {
     id?: number
     name?: string
     address?: string
-    uniqNumber?: string
+    uniqueNumber?: string
     description?: string
+    fileImageBrand?: number
 }

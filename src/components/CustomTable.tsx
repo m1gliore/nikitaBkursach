@@ -1,13 +1,6 @@
 import React from 'react';
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper} from '@mui/material';
 import {CustomTableProps} from "../types/Tables";
-import styled from "styled-components";
-import {ImageType} from "../types/Items";
-
-const CustomImage = styled.img`
-  width: 3vw;
-  height: 6vh;
-`
 
 const CustomTable: React.FC<CustomTableProps> = ({data, columns, rowsPerPage, currentPage}) => {
     const startIndex = currentPage * rowsPerPage

@@ -3,6 +3,17 @@ export interface LoginFormInput {
     password: string
 }
 
+export interface SignUpFormInput {
+    email: string
+    password: string
+    repPassword: string
+    companyName: string
+    companyDescription: string
+    companyAddress: string
+    companyUniqueNumber: string
+    fileImageBrand: number
+}
+
 export interface CompanyInfoFormInput {
     name: string
     address: string

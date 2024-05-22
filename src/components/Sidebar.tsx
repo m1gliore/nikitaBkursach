@@ -3,20 +3,22 @@ import styled from "styled-components";
 import {Link, useNavigate} from "react-router-dom";
 import {
     AdminPanelSettingsOutlined,
-    ArticleOutlined,
-    BarChartOutlined, BusinessOutlined, ExitToAppOutlined, InventoryOutlined, LoginOutlined,
+    BarChartOutlined,
+    CreditCardOutlined,
+    ExitToAppOutlined,
+    PersonOutlined,
     RequestQuoteOutlined,
-    TabletAndroidOutlined
+    ScoreOutlined,
+    SegmentOutlined, StoreOutlined
 } from "@mui/icons-material";
 import {useLocalStorage} from "react-use";
-import {jwtDecode} from "jwt-decode";
-import {DecodedToken, LocalStorageData} from "../types/Token";
+import {LocalStorageData} from "../types/Token";
 import axios from "axios";
 
 const Wrapper = styled.div`
   flex: 1.5;
-  background-color: rgb(51, 51, 51);
-  color: rgb(255, 255, 255);
+  background-color: rgb(255, 255, 255);
+  color: rgb(51, 51, 51);
   padding: .8vw;
   display: flex;
   flex-direction: column;
@@ -25,12 +27,13 @@ const Wrapper = styled.div`
   min-height: 90vh;
   height: 100%;
   gap: 2.5vh;
+  border-right: .15vw solid rgb(51, 51, 51);
 `
 
 const Logo = styled(Link)`
   font-size: 1.5rem;
   cursor: pointer;
-  color: rgb(255, 255, 255);
+  color: rgb(51, 51, 51);
   text-decoration: none;
   margin: 1rem 0;
   font-weight: bold;
@@ -41,7 +44,7 @@ const Logo = styled(Link)`
 `
 
 const SidebarLink = styled(Link)`
-  color: rgb(255, 255, 255);
+  color: rgb(51, 51, 51);
   text-decoration: none;
 `
 
@@ -64,9 +67,8 @@ const SidebarItemDesc = styled.span`
 const Sidebar: React.FC = () => {
 
     const [user, setUser] = useLocalStorage<LocalStorageData>('user')
-    const [isUser, setIsUser] = useState<number>(0)
     const [token, setToken] = useState<string>("")
-    const [admin, setAdmin] = useState<string>("ROLE_USER")
+    const [admin, setAdmin] = useState<string>("")
 
     const navigate = useNavigate()
 
@@ -89,51 +91,75 @@ const Sidebar: React.FC = () => {
 
     return (
         <Wrapper>
-            <Logo to="/">Pm.</Logo>
-            <SidebarLink to="/catalogs">
-                <SidebarItem>
-                    <TabletAndroidOutlined/>
-                    <SidebarItemDesc>Каталог</SidebarItemDesc>
-                </SidebarItem>
-            </SidebarLink>
-            <SidebarLink to="/tenders">
-                <SidebarItem>
-                    <RequestQuoteOutlined/>
-                    <SidebarItemDesc>Тендеры</SidebarItemDesc>
-                </SidebarItem>
-            </SidebarLink>
-            {admin === "ROLE_USER" &&
-                <SidebarLink to="/offers">
+            <Logo to="/">Bank.</Logo>
+            {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
+                <SidebarLink to="/segments">
                     <SidebarItem>
-                        <InventoryOutlined/>
-                        <SidebarItemDesc>Предложения</SidebarItemDesc>
+                        <SegmentOutlined/>
+                        <SidebarItemDesc>Сегменты</SidebarItemDesc>
                     </SidebarItem>
                 </SidebarLink>
             }
-            <SidebarLink to="/companies">
-                <SidebarItem>
-                    <BusinessOutlined/>
-                    <SidebarItemDesc>Компании</SidebarItemDesc>
-                </SidebarItem>
-            </SidebarLink>
             {admin === "ROLE_ADMIN" &&
-                <SidebarLink to="/admin">
+                <SidebarLink to="/scoring">
                     <SidebarItem>
-                        <AdminPanelSettingsOutlined/>
-                        <SidebarItemDesc>Администратор</SidebarItemDesc>
+                        <ScoreOutlined/>
+                        <SidebarItemDesc>Методы оценки</SidebarItemDesc>
                     </SidebarItem>
                 </SidebarLink>
             }
-            <SidebarLink to="/statistics">
-                <SidebarItem>
-                    <BarChartOutlined/>
-                    <SidebarItemDesc>Статистика</SidebarItemDesc>
-                </SidebarItem>
-            </SidebarLink>
+            {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
+                <SidebarLink to="/loans">
+                    <SidebarItem>
+                        <RequestQuoteOutlined/>
+                        <SidebarItemDesc>Заявки</SidebarItemDesc>
+                    </SidebarItem>
+                </SidebarLink>
+            }
+            {admin === "ROLE_ADMIN" &&
+                <SidebarLink to="/companies">
+                    <SidebarItem>
+                        <StoreOutlined/>
+                        <SidebarItemDesc>Компании</SidebarItemDesc>
+                    </SidebarItem>
+                </SidebarLink>
+            }
+            {admin === "ROLE_USER" &&
+                <SidebarLink to="/user">
+                    <SidebarItem>
+                        <PersonOutlined/>
+                        <SidebarItemDesc>Профиль</SidebarItemDesc>
+                    </SidebarItem>
+                </SidebarLink>
+            }
+            {/*{admin === "ROLE_ADMIN" &&*/}
+            {/*    <SidebarLink to="/admin">*/}
+            {/*        <SidebarItem>*/}
+            {/*            <AdminPanelSettingsOutlined/>*/}
+            {/*            <SidebarItemDesc>Администратор</SidebarItemDesc>*/}
+            {/*        </SidebarItem>*/}
+            {/*    </SidebarLink>*/}
+            {/*}*/}
+            {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
+                <SidebarLink to="/finance">
+                    <SidebarItem>
+                        <CreditCardOutlined/>
+                        <SidebarItemDesc>Финансовые данные</SidebarItemDesc>
+                    </SidebarItem>
+                </SidebarLink>
+            }
+            {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&
+                <SidebarLink to="/statistics">
+                    <SidebarItem>
+                        <BarChartOutlined/>
+                        <SidebarItemDesc>Статистика</SidebarItemDesc>
+                    </SidebarItem>
+                </SidebarLink>
+            }
             {token === "" &&
                 <SidebarLink to="/login">
                     <SidebarItem>
-                        <LoginOutlined/>
+                        <ExitToAppOutlined/>
                         <SidebarItemDesc>Вход</SidebarItemDesc>
                     </SidebarItem>
                 </SidebarLink>

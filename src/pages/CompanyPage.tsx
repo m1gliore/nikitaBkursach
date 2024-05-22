@@ -20,7 +20,7 @@ import {useLocation} from "react-router-dom";
 import axios from "axios";
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "../types/Token";
-import {CompanyInfo} from "../types/Company";
+import {Company} from "../types/Company";
 
 const Title = styled.h1`
 `
@@ -28,12 +28,11 @@ const Title = styled.h1`
 const CompanyPage: React.FC = () => {
     const [openSearchDialog, setOpenSearchDialog] = useState<boolean>(false); // Состояние для диалога поиска
     const [searchQuery, setSearchQuery] = useState<string>(''); // Состояние для значения поиска
-    const [companies, setCompanies] = useState<Array<CompanyInfo>>([])
+    const [companies, setCompanies] = useState<Array<Company>>([])
     const [pg, setPg] = useState<number>(0)
 
     const catalogId = useLocation().search.split("=")[1]
 
-    const [isUser, setIsUser] = useState<number>(1)
     const [user,] = useLocalStorage<LocalStorageData>('user')
     const [token, setToken] = useState<string>("")
 
@@ -47,7 +46,7 @@ const CompanyPage: React.FC = () => {
         if (token) {
             (async () => {
                 try {
-                    const response = await axios.get(`http://localhost:8080/server/coursework-auth/api/company`, {
+                    const response = await axios.get(`http://localhost:8080/server/coursework-admin/api/company`, {
                         headers: {
                             Authorization: `${token}`
                         }
@@ -67,7 +66,7 @@ const CompanyPage: React.FC = () => {
 
     const handleSearch = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/server/coursework-admin/api/company/search`, {
+            const response = await axios.get(`http://localhost:8080/server/coursework-admin/api/company`, {
                 headers: {
                     Authorization: `${token}`
                 },
@@ -89,12 +88,10 @@ const CompanyPage: React.FC = () => {
 
     return (
         <Container>
-            <Title>Продукция</Title>
-            {isUser === 1 &&
-                <Button variant="contained" color="secondary" onClick={handleSearchClick}>
-                    Поиск
-                </Button>
-            }
+            <Title>Компании</Title>
+            <Button variant="contained" color="primary" onClick={handleSearchClick}>
+                Поиск
+            </Button>
             <TableContainer style={{marginTop: '1vw'}}>
                 <Table>
                     <TableHead>
@@ -111,7 +108,7 @@ const CompanyPage: React.FC = () => {
                                 <TableCell>{company.name}</TableCell>
                                 <TableCell>{company.description}</TableCell>
                                 <TableCell>{company.address}</TableCell>
-                                <TableCell>{company.uniqNumber}</TableCell>
+                                <TableCell>{company.uniqueNumber}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
