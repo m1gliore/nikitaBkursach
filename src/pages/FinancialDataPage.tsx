@@ -284,7 +284,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="netIncome"
+                        label="Чистая прибыль"
                         type="number"
                         value={newFinData.netIncome}
                         onChange={(e) => setNewFinData({...newFinData, netIncome: Number(e.target.value)})}
@@ -292,7 +292,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalAssets"
+                        label="Общие активы"
                         type="number"
                         value={newFinData.totalAssets}
                         onChange={(e) =>
@@ -302,7 +302,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalEquity"
+                        label="Общий капитал"
                         type="number"
                         value={newFinData.totalEquity}
                         onChange={(e) =>
@@ -312,7 +312,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalLiabilities"
+                        label="Общие обязательства"
                         type="number"
                         value={newFinData.totalLiabilities}
                         onChange={(e) =>
@@ -322,7 +322,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="salesRevenue"
+                        label="Выручка от продаж"
                         type="number"
                         value={newFinData.salesRevenue}
                         onChange={(e) =>
@@ -332,7 +332,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="marketValue"
+                        label="Рыночная стоимость"
                         type="number"
                         value={newFinData.marketValue}
                         onChange={(e) =>
@@ -342,7 +342,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="cashFlow"
+                        label="Денежный поток"
                         type="number"
                         value={newFinData.cashFlow}
                         onChange={(e) =>
@@ -391,7 +391,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="netIncome"
+                        label="Чистая прибыль"
                         type="number"
                         value={editFinData.netIncome}
                         onChange={(e) => setEditFinData({...editFinData, netIncome: Number(e.target.value)})}
@@ -399,7 +399,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalAssets"
+                        label="Общие активы"
                         type="number"
                         value={editFinData.totalAssets}
                         onChange={(e) =>
@@ -409,7 +409,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalEquity"
+                        label="Общий капитал"
                         type="number"
                         value={editFinData.totalEquity}
                         onChange={(e) =>
@@ -419,7 +419,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="totalLiabilities"
+                        label="Общие обязательства"
                         type="number"
                         value={editFinData.totalLiabilities}
                         onChange={(e) =>
@@ -429,7 +429,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="salesRevenue"
+                        label="Выручка от продаж"
                         type="number"
                         value={editFinData.salesRevenue}
                         onChange={(e) =>
@@ -439,7 +439,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="marketValue"
+                        label="Рыночная стоимость"
                         type="number"
                         value={editFinData.marketValue}
                         onChange={(e) =>
@@ -449,7 +449,7 @@ const FinancialDataPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="cashFlow"
+                        label="Денежный поток"
                         type="number"
                         value={editFinData.cashFlow}
                         onChange={(e) =>

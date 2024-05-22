@@ -248,7 +248,7 @@ const LoanPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="interestRate"
+                        label="Предпочтительная ставка"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newLoan.interestRate > 0 && newLoan.interestRate}
@@ -257,7 +257,7 @@ const LoanPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="termMonth"
+                        label="Срок (в месяцах)"
                         type="number"
                         value={newLoan.termMonth}
                         onChange={(e) => setNewLoan({...newLoan, termMonth: Number(e.target.value)})}
@@ -298,7 +298,7 @@ const LoanPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="interestRate"
+                        label="Предпочтительная ставка"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editLoan.interestRate > 0 && editLoan.interestRate}
@@ -307,7 +307,7 @@ const LoanPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="termMonth"
+                        label="Срок (в месяцах)"
                         type="number"
                         value={editLoan.termMonth}
                         onChange={(e) => setEditLoan({...editLoan, termMonth: Number(e.target.value)})}

@@ -214,7 +214,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffNetIncome"
+                        label="Коэффициент чистой прибыли"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffNetIncome > 0 && newScoringMethod.coeffNetIncome}
@@ -226,7 +226,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalAssets"
+                        label="Коэффициент общих активов"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffTotalAssets > 0 && newScoringMethod.coeffTotalAssets}
@@ -238,7 +238,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalEquity"
+                        label="Коэффициент общего капитала"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffTotalEquity > 0 && newScoringMethod.coeffTotalEquity}
@@ -250,7 +250,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalLiabilities"
+                        label="Коэффициент общих обязательств"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffTotalLiabilities > 0 && newScoringMethod.coeffTotalLiabilities}
@@ -262,7 +262,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffSalesRevenue"
+                        label="Коэффициент выручки от продаж"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffSalesRevenue > 0 && newScoringMethod.coeffSalesRevenue}
@@ -274,7 +274,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffMarketValue"
+                        label="Коэффициент рыночной стоимости"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffMarketValue > 0 && newScoringMethod.coeffMarketValue}
@@ -286,7 +286,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffCashFlow"
+                        label="Коэффициент денежного потока"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffCashFlow > 0 && newScoringMethod.coeffCashFlow}
@@ -298,7 +298,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffMonth"
+                        label="Месячный коэффициент"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffMonth > 0 && newScoringMethod.coeffMonth}
@@ -310,7 +310,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffAmount"
+                        label="Суммарный коэффициент"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={newScoringMethod.coeffAmount > 0 && newScoringMethod.coeffAmount}
@@ -381,7 +381,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffNetIncome"
+                        label="Коэффициент чистой прибыли"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffNetIncome > 0 && editScoringMethod.coeffNetIncome}
@@ -393,7 +393,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalAssets"
+                        label="Коэффициент общих активов"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffTotalAssets > 0 && editScoringMethod.coeffTotalAssets}
@@ -405,7 +405,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalEquity"
+                        label="Коэффициент общего капитала"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffTotalEquity > 0 && editScoringMethod.coeffTotalEquity}
@@ -417,7 +417,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffTotalLiabilities"
+                        label="Коэффициент общих обязательств"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffTotalLiabilities > 0 && editScoringMethod.coeffTotalLiabilities}
@@ -429,7 +429,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffSalesRevenue"
+                        label="Коэффициент выручки от продаж"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffSalesRevenue > 0 && editScoringMethod.coeffSalesRevenue}
@@ -441,7 +441,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffMarketValue"
+                        label="Коэффициент рыночной стоимости"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffMarketValue > 0 && editScoringMethod.coeffMarketValue}
@@ -453,7 +453,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffCashFlow"
+                        label="Коэффициент денежного потока"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffCashFlow > 0 && editScoringMethod.coeffCashFlow}
@@ -465,7 +465,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffMonth"
+                        label="Месячный коэффициент"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffMonth > 0 && editScoringMethod.coeffMonth}
@@ -477,7 +477,7 @@ const ScoringMethodsPage: React.FC = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="coeffAmount"
+                        label="Суммарный коэффициент"
                         type="number"
                         InputProps={{inputProps: {step: '0.01'}}}
                         value={editScoringMethod.coeffAmount > 0 && editScoringMethod.coeffAmount}
