@@ -50,7 +50,7 @@ const LoanPage: React.FC = () => {
     const [idCompanyView, setIdCompanyView] = useState<number>(0)
     const [companies, setCompanies] = useState<Company[]>([])
 
-    const [filterType, setFilterType] = useState<string>("ACCEPTED,REJECTED,ACTIVE,HIDDEN");
+    const [filterType, setFilterType] = useState<string>("APPROVED,REJECTED,ACTIVE,HIDDEN");
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const openMenu = Boolean(anchorEl);
 
@@ -137,14 +137,14 @@ const LoanPage: React.FC = () => {
     }
 
     const handleRowClick = async (idLoan: number | undefined) => {
-        // axios.put(`http://localhost:8080/server/coursework-user/api/loan/${idLoan}/activated`, {}, {
-        //     headers: {
-        //         Authorization: `${token}`
-        //     }
-        // })
-        //     .then(() => {
-        //         navigate(0)
-        //     })
+        axios.put(`http://localhost:8080/server/coursework-user/api/loan/${idLoan}/activated`, {}, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+            .then(() => {
+                navigate(0)
+            })
     }
 
     const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -228,8 +228,8 @@ const LoanPage: React.FC = () => {
                         open={openMenu}
                         onClose={() => handleFilterClose()}
                     >
-                        <MenuItem onClick={() => handleFilterClose("ACCEPTED,REJECTED,ACTIVE,HIDDEN")}>Все</MenuItem>
-                        <MenuItem onClick={() => handleFilterClose("ACCEPTED")}>Принятые</MenuItem>
+                        <MenuItem onClick={() => handleFilterClose("APPROVED,REJECTED,ACTIVE,HIDDEN")}>Все</MenuItem>
+                        <MenuItem onClick={() => handleFilterClose("APPROVED")}>Принятые</MenuItem>
                         <MenuItem onClick={() => handleFilterClose("REJECTED")}>Отклонённые</MenuItem>
                         <MenuItem onClick={() => handleFilterClose("ACTIVE")}>Активные</MenuItem>
                         <MenuItem onClick={() => handleFilterClose("HIDDEN")}>Неактивные</MenuItem>
