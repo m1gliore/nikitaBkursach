@@ -22,12 +22,14 @@ import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "../types/Token";
 import {Loan} from "../types/Loan";
 import {Company} from "../types/Company";
-import {FilterListOutlined} from "@mui/icons-material";
+import {AttachMoney, CurrencyRuble, Euro, FilterListOutlined} from "@mui/icons-material";
 
 const Title = styled.h1`
 `
 
 const LoanPage: React.FC = () => {
+    type Currency = 'RUB' | 'USD' | 'EUR';
+
     const [loans, setLoans] = useState<Array<Loan>>([]);
     const [pg, setPg] = useState<number>(0);
     const [openAddLoanDialog, setOpenAddLoanDialog] = useState<boolean>(false);
@@ -53,6 +55,8 @@ const LoanPage: React.FC = () => {
     const [filterType, setFilterType] = useState<string>("APPROVED,REJECTED,ACTIVE,HIDDEN");
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const openMenu = Boolean(anchorEl);
+
+    const [currency, setCurrency] = useState<Currency>('RUB');
 
     useEffect(() => {
         if (user?.token) {
@@ -158,6 +162,19 @@ const LoanPage: React.FC = () => {
         }
     };
 
+    const currencyRates = {
+        RUB: 1,
+        USD: 0.013, // примерный курс
+        EUR: 0.012 // примерный курс
+    };
+
+    const handleCurrencyChange = () => {
+        const newCurrency = currency === 'RUB' ? 'USD' : currency === 'USD' ? 'EUR' : 'RUB';
+        const rate = currencyRates[newCurrency] / currencyRates[currency];
+        setNewLoan({ ...newLoan, amount: newLoan.amount * rate });
+        setCurrency(newCurrency);
+    };
+
     return (
         <Container>
             <Title>Заявки</Title>
@@ -238,9 +255,15 @@ const LoanPage: React.FC = () => {
             </div>
             <Dialog open={openAddLoanDialog} onClose={() => setOpenAddLoanDialog(false)}>
                 <DialogTitle>Добавить новую заявку</DialogTitle>
+                <IconButton
+                    onClick={handleCurrencyChange}
+                    style={{ position: 'absolute', right: 16, top: 8 }}
+                >
+                    {currency === 'RUB' ? <AttachMoney /> : currency === 'USD' ? <Euro /> : <CurrencyRuble />}
+                </IconButton>
                 <DialogContent>
                     <TextField
-                        label="Количество"
+                        label={`Количество (в ${currency})`}
                         type="number"
                         value={newLoan.amount > 0 && newLoan.amount}
                         onChange={(e) => setNewLoan({...newLoan, amount: parseFloat(e.target.value)})}
