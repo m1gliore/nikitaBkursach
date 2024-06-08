@@ -9,14 +9,17 @@ import LoginPage from "./pages/LoginPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "./types/Token";
-import CompanyPage from "./pages/CompanyPage";
+import CampaignsPage from "./pages/CampaignsPage";
 import axios from "axios";
 import RegistrationPage from "./pages/RegistrationPage";
-import SegmentPage from "./pages/SegmentPage";
-import ScoringMethodsPage from "./pages/ScoringMethodsPage";
+import AdCategoriesPage from "./pages/AdCategoriesPage";
+import TargetingPage from "./pages/TargetingPage";
 import UserProfile from "./pages/UserProfile";
-import FinancialDataPage from "./pages/FinancialDataPage";
-import LoanPage from "./pages/LoanPage";
+import BudgetPlanningPage from "./pages/BudgetPlanningPage";
+import PaymentsPage from "./pages/PaymentsPage";
+import SingleCampaignPage from "./pages/SingleCampaignPage";
+import AdMaterialsPage from "./pages/AdMaterialsPage";
+import InteractionsPage from "./pages/InteractionsPage";
 
 const Wrapper = styled.div`
   display: flex;
@@ -31,45 +34,59 @@ const Main = styled.div`
 
 const App: React.FC = () => {
 
-    const [user,] = useLocalStorage<LocalStorageData>('user')
-    const [token, setToken] = useState<string>("")
-    const [admin, setAdmin] = useState<string>("ROLE_USER")
+    // const [user,] = useLocalStorage<LocalStorageData>('user')
+    // const [token, setToken] = useState<string>("")
+    // const [admin, setAdmin] = useState<string>("ROLE_USER")
 
-    useEffect(() => {
-        if (user?.token) {
-            setToken(user.token)
-        }
-    }, [user])
+    // useEffect(() => {
+    //     if (user?.token) {
+    //         setToken(user.token)
+    //     }
+    // }, [user])
 
-    useEffect(() => {
-        if (token) {
-            axios.get(`http://localhost:8080/server/coursework/api/role`, {
-                headers: {
-                    Authorization: `${token}`
-                }
-            })
-                .then(res => setAdmin(res.data.role));
-        }
-    }, [token])
+    // useEffect(() => {
+    //     if (token) {
+    //         axios.get(`http://localhost:8080/server/coursework/api/role`, {
+    //             headers: {
+    //                 Authorization: `${token}`
+    //             }
+    //         })
+    //             .then(res => setAdmin(res.data.role));
+    //     }
+    // }, [token])
+    const [isAdmin, setIsAdmin] = useState<boolean>(false)
 
     return (
         <Wrapper>
             <Router>
+                <Sidebar isAdmin={isAdmin}/>
                 <Main>
-                    <Sidebar/>
                     <Routes>
                         <Route path="*" element={<ErrorPage/>}/>
                         <Route path="/" element={<HomePage/>}/>
-                        {/*{admin === "ROLE_ADMIN" && <Route path="/admin" element={<AdminPage/>}/>}*/}
                         <Route path="/login" element={<LoginPage/>}/>
                         <Route path="/signup" element={<RegistrationPage/>}/>
-                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/statistics" element={<StatisticsPage/>}/>}
-                        <Route path="/companies" element={<CompanyPage/>}/>
-                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/segments" element={<SegmentPage/>}/>}
-                        {admin === "ROLE_ADMIN" && <Route path="/scoring" element={<ScoringMethodsPage/>}/>}
-                        {admin === "ROLE_USER" && <Route path="/user" element={<UserProfile/>}/>}
-                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/finance" element={<FinancialDataPage/>}/>}
-                        {(admin === "ROLE_ADMIN" || admin === "ROLE_USER") && <Route path="/loans" element={<LoanPage/>}/>}
+                        {/*{(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&*/}
+                        {/*    <Route path="/statistics" element={<StatisticsPage/>}/>}*/}
+                        {isAdmin && <Route path="/statistics" element={<StatisticsPage/>}/>}
+                        <Route path="/campaigns" element={<CampaignsPage isAdmin={isAdmin}/>}/>
+                        {/*campaignId*/}
+                        {(isAdmin || !isAdmin) && <Route path="/campaigns/1" element={<SingleCampaignPage isAdmin={isAdmin}/>}/>}
+                        {/*{(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&*/}
+                        {/*    <Route path="/segments" element={<AdMaterialsPage/>}/>}*/}
+                        {isAdmin && <Route path="/admaterials" element={<AdCategoriesPage isAdmin={isAdmin}/>}/>}
+                        {isAdmin && <Route path="/admaterials/1" element={<AdMaterialsPage isAdmin={isAdmin}/>}/>}
+                        {/*{admin === "ROLE_ADMIN" && <Route path="/scoring" element={<TargetingPage/>}/>}*/}
+                        {isAdmin && <Route path="/targeting" element={<TargetingPage isAdmin={isAdmin}/>}/>}
+                        {/*{admin === "ROLE_USER" && <Route path="/user" element={<UserProfile/>}/>}*/}
+                        {!isAdmin && <Route path="/user" element={<UserProfile/>}/>}
+                        {/*{(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&*/}
+                        {/*    <Route path="/finance" element={<BudgetPlanningPage/>}/>}*/}
+                        {isAdmin && <Route path="/finance" element={<BudgetPlanningPage isAdmin={isAdmin}/>}/>}
+                        {/*{(admin === "ROLE_ADMIN" || admin === "ROLE_USER") &&*/}
+                        {/*    <Route path="/loans" element={<PaymentsPage/>}/>}*/}
+                        {isAdmin && <Route path="/payments" element={<PaymentsPage isAdmin={isAdmin}/>}/>}
+                        {isAdmin && <Route path="/interactions" element={<InteractionsPage isAdmin={isAdmin}/>}/>}
                     </Routes>
                 </Main>
                 <Footer/>

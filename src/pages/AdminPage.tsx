@@ -7,7 +7,7 @@ import {SubmitHandler, useForm} from "react-hook-form";
 import {CompanyInfoFormInput, UserFormInput} from "../types/Forms";
 import axios from "axios";
 import {useNavigate} from 'react-router-dom';
-import {Company} from "../types/Company";
+import {Campaign} from "../types/Campaign";
 import {useLocalStorage} from "react-use";
 import {LocalStorageData} from "../types/Token";
 
@@ -43,7 +43,7 @@ const AdminPage: React.FC = () => {
     const [user,] = useLocalStorage<LocalStorageData>('user')
     const [token, setToken] = useState<string>("")
     const [activeAction, setActiveAction] = useState<string>("add")
-    const [companies, setCompanies] = useState<Company[]>([])
+    const [companies, setCompanies] = useState<Campaign[]>([])
     const [currentCompanyId, setCurrentCompanyId] = useState<number>(0)
 
     useEffect(() => {

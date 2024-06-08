@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from "styled-components";
 import {Container} from "../components/Container";
-import homePagePicture from "../assets/images/people-taking-out-money-from-the-bank-concept-illustration_114360-12881.jpg"
+import homePagePicture from "../assets/images/digital-marketing-05.jpg"
 
 const MainHeader = styled.h1``
 
@@ -17,9 +17,9 @@ const Image = styled.img`
 const HomePage: React.FC = () => {
     return (
         <Container>
-            <MainHeader>Сайт для оценки кредитозаемщиков</MainHeader>
-            <Text>Оценивайте кредиты с помощью нашего сайта.</Text>
-            <Image src={homePagePicture} alt="Изображения на главной (ЭЦП)"/>
+            <MainHeader>Сайт для эффективного распределения и управления рекламным контентом</MainHeader>
+            <Text>На данном сайте вы можете эффективно распределять и управлять рекламным контентом.</Text>
+            <Image src={homePagePicture} alt="Изображения на главной"/>
         </Container>
     )
 }

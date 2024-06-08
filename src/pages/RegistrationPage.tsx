@@ -26,62 +26,25 @@ const RegistrationPage: React.FC = () => {
 
     const {register, handleSubmit, formState: {errors}} = useForm<SignUpFormInput>()
     const navigate = useNavigate()
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [filePreview, setFilePreview] = useState<string | null>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFilePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const onReg: SubmitHandler<SignUpFormInput> = async (data) => {
 
         if (data.password === data.repPassword) {
-            if (selectedFile) {
-                let newFileId: number = 0
-                if (selectedFile instanceof File) {
-                    const formData = new FormData();
-                    formData.append('file', selectedFile);
-                    formData.append('fileType', "SYSTEM");
-                    try {
-                        const response = await axios.post('http://localhost:8080/server/coursework-public/api/file', formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data'
-                            }
-                        });
-                        newFileId = response.data.id
-                    } catch (error) {
-                        alert(`Произошла ошибка при отправке запроса: ${error}`);
-                    }
-                }
 
-                const reqBody = {
-                    email: data.email,
-                    password: data.password,
-                    companyName: data.companyName,
-                    companyDescription: data.companyDescription,
-                    companyAddress: data.companyAddress,
-                    companyUniqueNumber: data.companyUniqueNumber,
-                    fileImageBrand: newFileId
-                }
+            const reqBody = {
+                email: data.email,
+                password: data.password,
+                companyName: data.username
+            }
 
-                try {
-                    await axios.post('http://localhost:8080/server/coursework/api/singUp', reqBody)
-                        .then(() => {
-                            navigate('/login')
-                            navigate(0)
-                        })
-                } catch (error: any) {
-                    alert(`Произошла ошибка при регистрации: ${error}`)
-                }
+            try {
+                await axios.post('http://localhost:8080/server/coursework/api/singUp', reqBody)
+                    .then(() => {
+                        navigate('/login')
+                        navigate(0)
+                    })
+            } catch (error: any) {
+                alert(`Произошла ошибка при регистрации: ${error}`)
             }
         } else {
             alert(`Пароли не совпадают`)
@@ -99,20 +62,8 @@ const RegistrationPage: React.FC = () => {
                         placeholder="Email"
                     />
                     <Input
-                        {...register('companyName')}
-                        placeholder="Название компании"
-                    />
-                    <Input
-                        {...register('companyDescription')}
-                        placeholder="Описание компании"
-                    />
-                    <Input
-                        {...register('companyAddress')}
-                        placeholder="Адрес компании"
-                    />
-                    <Input
-                        {...register('companyUniqueNumber')}
-                        placeholder="Регистрационный номер компании"
+                        {...register('username')}
+                        placeholder="Имя пользователя"
                     />
                     {errors.email && <p style={{color: "red", textAlign: "center"}}>{errors.email.message}</p>}
                     <Input
@@ -139,27 +90,6 @@ const RegistrationPage: React.FC = () => {
                     />
                     {errors.password &&
                         <p style={{color: "red", textAlign: "center"}}>{errors.password.message}</p>}
-                    <div style={{marginBottom: '16px', display: 'flex', alignItems: 'center'}}>
-                        <input
-                            id="image-upload"
-                            type="file"
-                            style={{display: 'none'}}
-                            onChange={handleFileChange}
-                        />
-                        <label htmlFor="image-upload" style={{marginRight: '8px'}}>
-                            <ButtonMUI component="span" variant="contained" startIcon={<CloudUpload/>}
-                                       color="primary">
-                                Загрузить изображение
-                            </ButtonMUI>
-                        </label>
-                        {filePreview && (
-                            <img
-                                src={filePreview}
-                                alt="Предварительный просмотр"
-                                style={{width: '50px', height: '50px', marginRight: '8px'}}
-                            />
-                        )}
-                    </div>
                     <Button type="submit">Зарегистрироваться</Button>
                     <div style={{display: "flex", justifyContent: "center"}}>
                         <SignIn to="/login">Войти</SignIn>

@@ -7,11 +7,7 @@ export interface SignUpFormInput {
     email: string
     password: string
     repPassword: string
-    companyName: string
-    companyDescription: string
-    companyAddress: string
-    companyUniqueNumber: string
-    fileImageBrand: number
+    username: string
 }
 
 export interface CompanyInfoFormInput {

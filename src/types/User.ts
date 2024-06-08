@@ -1,4 +1,4 @@
-import {Company} from "./Company";
+import {Campaign} from "./Campaign";
 
 export type User = {
     id?: number
@@ -7,10 +7,4 @@ export type User = {
     password?: string
     oldPassword?: string
     newPassword?: string
-    companyName?: string
-    companyDescription?: string
-    companyAddress?: string
-    companyUniqueNumber?: string
-    fileImageBrand?: number
-    company?: Company
 }
